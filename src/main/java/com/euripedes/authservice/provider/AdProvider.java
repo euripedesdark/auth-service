@@ -32,10 +32,9 @@ public class AdProvider implements AuthProvider, AuthenticationProvider {
     public IdentityDto authenticate(LoginRequestDto request){
         if(!NAME.equalsIgnoreCase(request.provider())) throw new ProviderUnavailableException(request.provider());
         try{
-            boolean ok=ldapTemplate.authenticate(
+            ldapTemplate.authenticate(
                 LdapQueryBuilder.query().base(properties.getUserSearchBase()).where("sAMAccountName").is(request.username()),
                 request.password());
-            if(!ok) throw new BadCredentialsException("Invalid credentials");
             return identityResolver.resolve(request.username(),NAME,groupResolver);
         }catch(BadCredentialsException e){throw e;}
         catch(org.springframework.ldap.AuthenticationException e){throw new BadCredentialsException("Invalid credentials",e);}
