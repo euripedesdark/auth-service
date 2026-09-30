@@ -4,6 +4,8 @@ spring:
 server:
   error:
     include-message: never
+  shutdown: graceful
+  forward-headers-strategy: native
 auth:
   ldap:
     url: ${AUTH_LDAP_URL}
@@ -11,8 +13,26 @@ auth:
     user-dn: ${AUTH_LDAP_USER_DN}
     password: ${AUTH_LDAP_PASSWORD}
     user-search-base: ${AUTH_LDAP_USER_SEARCH_BASE}
+    require-secure: ${AUTH_LDAP_REQUIRE_SECURE:true}
+    connect-timeout-ms: ${AUTH_LDAP_CONNECT_TIMEOUT_MS:5000}
+    read-timeout-ms: ${AUTH_LDAP_READ_TIMEOUT_MS:5000}
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

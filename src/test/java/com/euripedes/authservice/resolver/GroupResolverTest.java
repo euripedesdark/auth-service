@@ -16,4 +16,8 @@ class GroupResolverTest {
         var groups=new GroupResolver().resolve(new DirContextAdapter(),attributes);
         assertEquals(java.util.List.of("GRP_ADMIN","GRP_FINANCEIRO"),groups);
     }
+    @Test void returnsEmptyWhenMemberOfIsMissing(){
+        BasicAttributes attributes=new BasicAttributes(true);
+        assertEquals(java.util.List.of(),new GroupResolver().resolve(new DirContextAdapter(),attributes));
+    }
 }
