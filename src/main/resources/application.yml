@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: auth-service
+server:
+  error:
+    include-message: never
+auth:
+  ldap:
+    url: ${AUTH_LDAP_URL}
+    base: ${AUTH_LDAP_BASE}
+    user-dn: ${AUTH_LDAP_USER_DN}
+    password: ${AUTH_LDAP_PASSWORD}
+    user-search-base: ${AUTH_LDAP_USER_SEARCH_BASE}
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
