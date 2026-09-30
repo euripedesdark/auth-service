@@ -13,7 +13,7 @@ ERP / SGDB-adapter / Firewall / Proxy / outro serviço
                     |
                     | HTTPS + HTTP Basic
                     v
-             Auth Service :8080
+             Auth Service :8181
                     |
                     | LDAPS
                     v
@@ -42,36 +42,36 @@ O Auth Service retorna a identidade:
 
 ### Porta HTTP
 
-A aplicação Spring Boot utiliza **porta 8080 por padrão**, pois não existe uma porta diferente definida no application.yml.
+A aplicação Spring Boot utiliza **porta 8181 por padrão**, pois não existe uma porta diferente definida no application.yml.
 
 Para alterar:
 
 ~~~bash
-SERVER_PORT=8081
+SERVER_PORT=8181
 ~~~
 
 ou:
 
 ~~~yaml
 server:
-  port: 8081
+  port: 8181
 ~~~
 
-Em produção, recomenda-se colocar o Auth Service atrás de HTTPS/reverse proxy e não expor a porta 8080 diretamente à rede de usuários.
+Em produção, recomenda-se colocar o Auth Service atrás de HTTPS/reverse proxy e não expor a porta 8181 diretamente à rede de usuários.
 
 ### Endereço de exemplo
 
 Supondo:
 
 - Auth Service: 192.168.2.50
-- Porta: 8080
+- Porta: 8181
 - AD/DC: 100.100.100.100
 - domínio AD: homelab.local
 
 O endereço interno será:
 
 ~~~text
-http://192.168.2.50:8080
+http://192.168.2.50:8181
 ~~~
 
 Em produção:
@@ -131,7 +131,7 @@ A configuração atual usa variáveis de ambiente.
 | AUTH_LDAP_REQUIRE_SECURE | true | Exige ldaps:// |
 | AUTH_LDAP_CONNECT_TIMEOUT_MS | 5000 | Timeout de conexão |
 | AUTH_LDAP_READ_TIMEOUT_MS | 5000 | Timeout de leitura |
-| SERVER_PORT | 8080 | Porta HTTP da aplicação |
+| SERVER_PORT | 8181 | Porta HTTP da aplicação |
 
 ### Exemplo
 
@@ -144,7 +144,7 @@ export AUTH_LDAP_USER_SEARCH_BASE='OU=Usuarios,DC=homelab,DC=local'
 export AUTH_LDAP_REQUIRE_SECURE='true'
 export AUTH_LDAP_CONNECT_TIMEOUT_MS='5000'
 export AUTH_LDAP_READ_TIMEOUT_MS='5000'
-export SERVER_PORT='8080'
+export SERVER_PORT='8181'
 ~~~
 
 **Não coloque a senha da conta de serviço no Git.**
@@ -210,7 +210,7 @@ mvn spring-boot:run
 A aplicação ficará, por padrão, em:
 
 ~~~text
-http://localhost:8080
+http://localhost:8181
 ~~~
 
 ---
@@ -226,7 +226,7 @@ GET /actuator/health
 Teste:
 
 ~~~bash
-curl -i http://localhost:8080/actuator/health
+curl -i http://localhost:8181/actuator/health
 ~~~
 
 Esse endpoint não substitui o teste de autenticação LDAP. Ele serve para verificar se a aplicação está respondendo.
@@ -585,7 +585,7 @@ AD
 
 Isso exige um componente intermediário que conheça o protocolo de autenticação esperado pelo SGDB e converta a autenticação para HTTP.
 
-**Não se deve configurar o SGDB para apontar simplesmente para http://auth-service:8080.**
+**Não se deve configurar o SGDB para apontar simplesmente para http://auth-service:8181.**
 
 ---
 
@@ -712,7 +712,7 @@ Recomendação:
                        |
                        v
                 Auth Service
-                    :8080
+                    :8181
                        |
                      LDAPS
                     :636
@@ -721,16 +721,16 @@ Recomendação:
                       AD
 ~~~
 
-A porta 8080 pode ficar restrita à rede interna ou ao reverse proxy.
+A porta 8181 pode ficar restrita à rede interna ou ao reverse proxy.
 
 Exemplo:
 
 ~~~text
-Reverse Proxy -> Auth Service:8080    ALLOW
-ERP            -> Auth Service:8080    ALLOW
-Firewall       -> Auth Service:8080    ALLOW
-Usuários       -> Auth Service:8080    DENY
-Internet       -> Auth Service:8080    DENY
+Reverse Proxy -> Auth Service:8181    ALLOW
+ERP            -> Auth Service:8181    ALLOW
+Firewall       -> Auth Service:8181    ALLOW
+Usuários       -> Auth Service:8181    DENY
+Internet       -> Auth Service:8181    DENY
 ~~~
 
 A política real deve ser adaptada à topologia da instalação.
@@ -771,7 +771,7 @@ server {
     server_name auth.homelab.local;
 
     location / {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:8181;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto https;
@@ -1025,7 +1025,7 @@ Para ERP, SGDB/serviços de banco e firewall/proxy:
                          +-------+--------+
                          |   AUTH SERVICE |
                          |    HTTPS       |
-                         |     :8080      |
+                         |     :8181      |
                          +---^-------^----+
                              |       |
                     HTTPS    |       | HTTPS
