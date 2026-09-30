@@ -6,9 +6,11 @@ import com.euripedes.authservice.contract.LoginRequestDto;
 import com.euripedes.authservice.resolver.GroupResolver;
 import com.euripedes.authservice.resolver.IdentityResolver;
 import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.ldap.AuthenticationException;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -37,6 +39,7 @@ public class AdProvider implements AuthProvider, AuthenticationProvider {
             if(!ok) throw new BadCredentialsException("Invalid credentials");
             return identityResolver.resolve(request.username(),NAME,groupResolver);
         }catch(BadCredentialsException e){throw e;}
+        catch(AuthenticationException e){throw new BadCredentialsException("Invalid credentials",e);}
         catch(DataAccessResourceFailureException e){throw new ProviderUnavailableException(NAME,e);}
         catch(RuntimeException e){throw new ProviderUnavailableException(NAME,e);}
     }
@@ -48,8 +51,12 @@ public class AdProvider implements AuthProvider, AuthenticationProvider {
 
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         if(!supports(authentication.getClass())) return null;
-        IdentityDto identity=authenticate(new LoginRequestDto(authentication.getName(),String.valueOf(authentication.getCredentials()),NAME));
-        return UsernamePasswordAuthenticationToken.authenticated(identity.username(),null,java.util.List.of());
+        try {
+            IdentityDto identity=authenticate(new LoginRequestDto(authentication.getName(),String.valueOf(authentication.getCredentials()),NAME));
+            return UsernamePasswordAuthenticationToken.authenticated(identity.username(),null,java.util.List.of());
+        } catch (ProviderUnavailableException e) {
+            throw new AuthenticationServiceException(e.getMessage(),e);
+        }
     }
     public boolean supports(Class<?> type){return UsernamePasswordAuthenticationToken.class.isAssignableFrom(type);}
 }
