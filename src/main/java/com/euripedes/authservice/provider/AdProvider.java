@@ -6,7 +6,6 @@ import com.euripedes.authservice.contract.LoginRequestDto;
 import com.euripedes.authservice.resolver.GroupResolver;
 import com.euripedes.authservice.resolver.IdentityResolver;
 import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.ldap.AuthenticationException;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -39,7 +38,7 @@ public class AdProvider implements AuthProvider, AuthenticationProvider {
             if(!ok) throw new BadCredentialsException("Invalid credentials");
             return identityResolver.resolve(request.username(),NAME,groupResolver);
         }catch(BadCredentialsException e){throw e;}
-        catch(AuthenticationException e){throw new BadCredentialsException("Invalid credentials",e);}
+        catch(org.springframework.ldap.AuthenticationException e){throw new BadCredentialsException("Invalid credentials",e);}
         catch(DataAccessResourceFailureException e){throw new ProviderUnavailableException(NAME,e);}
         catch(RuntimeException e){throw new ProviderUnavailableException(NAME,e);}
     }
