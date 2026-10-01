@@ -1094,3 +1094,87 @@ Para integrar um sistema novo:
 ~~~
 
 Esse é o padrão de integração para ERP, firewall/proxy e demais serviços que precisem utilizar o Auth Service como ponto central de autenticação.
+
+
+---
+
+# 30. Autenticação por Bearer Token
+
+A integração nova deve preferir o endpoint:
+
+```http
+POST /api/v1/identity/token
+Content-Type: application/json
+```
+
+Payload:
+
+```json
+{
+  "username": "usuario",
+  "password": "senha",
+  "provider": "AD"
+}
+```
+
+Resposta:
+
+```json
+{
+  "accessToken": "<JWT>",
+  "tokenType": "Bearer",
+  "expiresIn": 900,
+  "identity": {
+    "identityId": "CN=Usuario,OU=Usuarios,DC=homelab,DC=local",
+    "username": "usuario",
+    "provider": "AD",
+    "groups": ["ERP-Vendas"]
+  }
+}
+```
+
+O token é assinado pelo Auth Service, contém identidade e grupos, e possui validade curta. O consumidor não precisa reenviar a senha AD em cada chamada.
+
+### Configuração obrigatória
+
+Defina uma chave forte e mantenha-a fora do Git:
+
+```bash
+export AUTH_TOKEN_SECRET='uma-chave-aleatoria-com-pelo-menos-32-bytes'
+export AUTH_TOKEN_ISSUER='auth-service'
+export AUTH_TOKEN_TTL_SECONDS='900'
+```
+
+Gere uma chave adequada, por exemplo:
+
+```bash
+openssl rand -base64 48
+```
+
+### Uso do token
+
+Depois de obter o token:
+
+```bash
+curl -i \
+  -H "Authorization: Bearer <JWT>" \
+  https://auth.homelab.local/api/v1/identity/me
+```
+
+Os endpoints `/me`, `/groups`, `/provider` e `/authenticated` aceitam Bearer Token. HTTP Basic continua disponível para compatibilidade com integrações existentes.
+
+### Segurança
+
+- Não armazene a senha AD no ERP.
+- Não registre o JWT ou o header Authorization em logs.
+- Use HTTPS entre consumidores e Auth Service.
+- Mantenha o TTL curto.
+- A mesma chave usada para validar o token deve ser protegida como segredo de infraestrutura.
+- Para múltiplas instâncias do Auth Service, todas precisam usar a mesma chave e o mesmo issuer.
+- O token representa a autorização/identidade no momento da emissão; alterações posteriores nos grupos AD passam a valer quando um novo token for emitido.
+
+### Compatibilidade
+
+`POST /api/v1/identity/authenticate` continua retornando somente `IdentityDto`, preservando consumidores existentes.
+
+Para novas integrações, use `POST /api/v1/identity/token`.
