@@ -1,44 +1,4 @@
 
-```markdown
-@@ -293,22 +293,13 @@
- 
- ## 🔒 Licença
- 
--### 🚫 Proprietária — Todos os direitos reservados
-+### 📄 Licença MIT
- 
--Este software é **proprietário e fechado**.
-+Este projeto está licenciado sob os termos da **Licença MIT**.
- 
--Sem autorização expressa do titular dos direitos, não é concedida permissão para:
--- ❌ copiar
--- ❌ redistribuir
--- ❌ modificar
--- ❌ publicar
--- ❌ sublicenciar
--- ❌ comercializar
--- ❌ criar obras derivadas
-+É concedida permissão, gratuitamente, a qualquer pessoa que obtenha uma cópia deste software e dos ficheiros de documentação associados, para tratar o Software sem restrições, incluindo, sem limitação, os direitos de usar, copiar, modificar, fundir, publicar, distribuir, sublicenciar e/ou vender cópias do Software.
- 
--O acesso ao código-fonte por meio do repositório privado **não constitui concessão de licença de uso, distribuição ou exploração comercial**.
--
--Este projeto **não é open source** e não está disponibilizado sob MIT, Apache-2.0, GPL, AGPL, BSD ou outra licença aberta.
-+O software é fornecido "tal como está", sem garantia de qualquer tipo, expressa ou implícita. Consulte o ficheiro `LICENSE` no repositório para obter o texto completo da licença.
- 
--Qualquer uso além das permissões expressamente concedidas pelo titular depende de autorização específica.
-+Copyright (c) 2026 Euripedes Batista de Paiva Junior. Todos os direitos reservados.
-
-```
-
----
-
-```
-
-```
-
----
-
-### Conteúdo completo do ficheiro `auth-service.md` atualizado:
 
 ```markdown
 # 🔐 Auth Service
