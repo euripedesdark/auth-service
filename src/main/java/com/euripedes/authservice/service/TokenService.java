@@ -3,8 +3,6 @@ package com.euripedes.authservice.service;
 import com.euripedes.authservice.config.TokenProperties;
 import com.euripedes.authservice.contract.IdentityDto;
 import com.euripedes.authservice.contract.TokenResponseDto;
-import org.springframework.security.oauth2.jose.jws.JwsHeader;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -22,7 +20,7 @@ public class TokenService {
         JwtClaimsSet claims=JwtClaimsSet.builder().issuer(properties.getIssuer()).issuedAt(now).expiresAt(exp)
             .subject(identity.identityId()).claim("username",identity.username()).claim("provider",identity.provider())
             .claim("groups",identity.groups()).build();
-        String token=encoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).type("JWT").build(),claims)).getTokenValue();
+        String token=encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
         return new TokenResponseDto(token,"Bearer",properties.getTtlSeconds(),identity);
     }
 }

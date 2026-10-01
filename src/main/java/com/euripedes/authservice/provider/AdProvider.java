@@ -33,7 +33,7 @@ public class AdProvider implements AuthProvider, AuthenticationProvider {
         if(!NAME.equalsIgnoreCase(request.provider())) throw new ProviderUnavailableException(request.provider());
         try{
             ldapTemplate.authenticate(
-                LdapQueryBuilder.query().base(properties.getUserSearchBase()).where("sAMAccountName").is(request.username()),
+                LdapQueryBuilder.query().where("sAMAccountName").is(request.username()),
                 request.password());
             return identityResolver.resolve(request.username(),NAME,groupResolver);
         }catch(BadCredentialsException e){throw e;}
