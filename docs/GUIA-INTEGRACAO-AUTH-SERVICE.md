@@ -4,7 +4,7 @@
 
 O Auth Service é o serviço central de autenticação e resolução de identidade dos sistemas que precisam validar usuários contra o Active Directory (AD/LDAP).
 
-Neste estágio, o contrato implementado é **REST + HTTP Basic Authentication**. O serviço não emite JWT, OAuth2/OIDC ou outros tokens.
+O contrato principal é **REST + HTTP Basic Authentication**, com suporte adicional a **Bearer JWT de curta duração** para integrações modernas. O Auth Service não implementa OAuth2/OIDC como servidor de autorização.
 
 Fluxo atual:
 
