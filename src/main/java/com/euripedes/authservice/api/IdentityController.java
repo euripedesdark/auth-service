@@ -19,15 +19,33 @@ public class IdentityController {
     private final AuthenticationService service;
     private final TokenService tokenService;
     public IdentityController(AuthenticationService service,TokenService tokenService){this.service=service;this.tokenService=tokenService;}
-    @GetMapping("/me") public IdentityDto me(Authentication a){return identityFrom(a);}
-    @GetMapping("/groups") public IdentityDto groups(Authentication a){return identityFrom(a);}
-    @GetMapping("/provider") public IdentityDto provider(Authentication a){return identityFrom(a);}
-    @GetMapping("/authenticated") public IdentityDto authenticated(Authentication a){return identityFrom(a);}
-    @PostMapping("/authenticate") @Operation(summary="Authenticate against Active Directory and issue an access token")
-    public TokenResponseDto authenticate(@Valid @RequestBody LoginRequestDto request){return tokenService.issue(service.authenticate(request));}
-    private IdentityDto identityFrom(Authentication a){
-        if(a==null||!a.isAuthenticated()) throw new org.springframework.security.authentication.AuthenticationCredentialsNotFoundException("Not authenticated");
-        if(a.getPrincipal() instanceof Jwt jwt) return new IdentityDto(jwt.getSubject(),jwt.getClaimAsString("username"),jwt.getClaimAsString("provider"),jwt.getClaimAsStringList("groups"));
-        return service.resolve(a);
+
+    @GetMapping("/me") @Operation(summary="Return the authenticated identity")
+    public IdentityDto me(Authentication a){return identityFrom(a);}
+    @GetMapping("/groups") @Operation(summary="Return the authenticated identity and groups")
+    public IdentityDto groups(Authentication a){return identityFrom(a);}
+    @GetMapping("/provider") @Operation(summary="Return the authenticated identity and provider")
+    public IdentityDto provider(Authentication a){return identityFrom(a);}
+    @GetMapping("/authenticated") @Operation(summary="Return the authenticated identity")
+    public IdentityDto authenticated(Authentication a){return identityFrom(a);}
+
+    /** Backward-compatible login contract: validates AD credentials and returns the identity. */
+    @PostMapping("/authenticate") @Operation(summary="Authenticate an identity against Active Directory")
+    public IdentityDto authenticate(@Valid @RequestBody LoginRequestDto request){return service.authenticate(request);}
+
+    /** Preferred application-to-application flow: validates AD credentials once and returns a short-lived Bearer token. */
+    @PostMapping("/token") @Operation(summary="Authenticate against Active Directory and issue a short-lived Bearer token")
+    public TokenResponseDto token(@Valid @RequestBody LoginRequestDto request){
+        return tokenService.issue(service.authenticate(request));
+    }
+
+    private IdentityDto identityFrom(Authentication authentication){
+        if(authentication==null||!authentication.isAuthenticated())
+            throw new org.springframework.security.authentication.AuthenticationCredentialsNotFoundException("Not authenticated");
+        if(authentication.getPrincipal() instanceof Jwt jwt){
+            return new IdentityDto(jwt.getSubject(),jwt.getClaimAsString("username"),
+                jwt.getClaimAsString("provider"),jwt.getClaimAsStringList("groups"));
+        }
+        return service.resolve(authentication);
     }
 }
