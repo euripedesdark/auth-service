@@ -1,3 +1,47 @@
+Aqui está a alteração efetuada na seção de **Licença** do ficheiro `auth-service.md`, atualizando o licenciamento para a **MIT License** e incluindo o aviso de direitos de autor do titular:
+
+```markdown
+@@ -293,22 +293,13 @@
+ 
+ ## 🔒 Licença
+ 
+-### 🚫 Proprietária — Todos os direitos reservados
++### 📄 Licença MIT
+ 
+-Este software é **proprietário e fechado**.
++Este projeto está licenciado sob os termos da **Licença MIT**.
+ 
+-Sem autorização expressa do titular dos direitos, não é concedida permissão para:
+-- ❌ copiar
+-- ❌ redistribuir
+-- ❌ modificar
+-- ❌ publicar
+-- ❌ sublicenciar
+-- ❌ comercializar
+-- ❌ criar obras derivadas
++É concedida permissão, gratuitamente, a qualquer pessoa que obtenha uma cópia deste software e dos ficheiros de documentação associados, para tratar o Software sem restrições, incluindo, sem limitação, os direitos de usar, copiar, modificar, fundir, publicar, distribuir, sublicenciar e/ou vender cópias do Software.
+ 
+-O acesso ao código-fonte por meio do repositório privado **não constitui concessão de licença de uso, distribuição ou exploração comercial**.
+-
+-Este projeto **não é open source** e não está disponibilizado sob MIT, Apache-2.0, GPL, AGPL, BSD ou outra licença aberta.
++O software é fornecido "tal como está", sem garantia de qualquer tipo, expressa ou implícita. Consulte o ficheiro `LICENSE` no repositório para obter o texto completo da licença.
+ 
+-Qualquer uso além das permissões expressamente concedidas pelo titular depende de autorização específica.
++Copyright (c) 2026 Euripedes Batista de Paiva Junior. Todos os direitos reservados.
+
+```
+
+---
+
+```
+
+```
+
+---
+
+### Conteúdo completo do ficheiro `auth-service.md` atualizado:
+
+```markdown
 # 🔐 Auth Service
 
 > 🛡️ Serviço centralizado de autenticação e resolução de identidade para aplicações corporativas, com integração a Active Directory / LDAP, autenticação stateless e emissão de JWT de curta duração.
@@ -52,6 +96,7 @@ O Auth Service é um microserviço dedicado à autenticação e resolução de i
              | PostgreSQL / |
              |      DB      |
              +--------------+
+
 ```
 
 > 💡 O Auth Service autentica a identidade. Cada sistema consumidor continua responsável por seus dados, permissões funcionais e regras de negócio.
@@ -59,37 +104,42 @@ O Auth Service é um microserviço dedicado à autenticação e resolução de i
 ## ✨ Recursos
 
 ### 🔐 Active Directory
+
 Autenticação através de provider dedicado para AD/LDAP, com suporte a conexão segura LDAPS.
 
-### 🎟️ JWT Bearer
+### 🎟️️ JWT Bearer
+
 O endpoint `/api/v1/identity/token` valida as credenciais e emite um token de curta duração. O TTL padrão é de **900 segundos (15 minutos)**.
 
 Claims principais:
-- 🆔 `sub` / identityId
-- 👤 `username`
-- 🏷️ `provider`
-- 👥 `groups`
-- 🕐 `iat`
-- ⏳ `exp`
-- 🏢 `iss`
+
+* 🆔 `sub` / identityId
+* 👤 `username`
+* 🏷️ `provider`
+* 👥 `groups`
+* 🕐 `iat`
+* ⏳ `exp`
+* 🏢 `iss`
 
 ### 🔑 HTTP Basic
+
 Os endpoints de consulta de identidade suportam HTTP Basic Authentication.
 
 ### 🛡️ Spring Security
-- Stateless session policy
-- HTTP Basic
-- OAuth2 Resource Server / JWT
-- Respostas 401 e 403
-- HSTS
-- Content-Type protection
-- Frame protection
-- Deny-by-default para rotas não autorizadas
+
+* Stateless session policy
+* HTTP Basic
+* OAuth2 Resource Server / JWT
+* Respostas 401 e 403
+* HSTS
+* Content-Type protection
+* Frame protection
+* Deny-by-default para rotas não autorizadas
 
 ## 📡 API
 
 | Método | Endpoint | Finalidade |
-|---|---|---|
+| --- | --- | --- |
 | POST | `/api/v1/identity/authenticate` | Autenticação direta |
 | POST | `/api/v1/identity/token` | Autenticação + emissão JWT |
 | GET | `/api/v1/identity/me` | Identidade autenticada |
@@ -99,15 +149,18 @@ Os endpoints de consulta de identidade suportam HTTP Basic Authentication.
 | GET | `/actuator/health` | Health check |
 
 ### 🔓 POST `/api/v1/identity/authenticate`
+
 ```json
 {
   "username": "usuario",
   "password": "senha",
   "provider": "AD"
 }
+
 ```
 
 Resposta:
+
 ```json
 {
   "identityId": "CN=Usuario,OU=Usuarios,DC=example,DC=local",
@@ -115,27 +168,32 @@ Resposta:
   "provider": "AD",
   "groups": ["ERP-Administradores", "ERP-Financeiro"]
 }
+
 ```
 
 ### 🎟️ POST `/api/v1/identity/token`
+
 ```json
 {
   "username": "usuario",
   "password": "senha",
   "provider": "AD"
 }
+
 ```
 
 Uso do token:
+
 ```http
-Authorization: Bearer <TOKEN>
+Authorization: Bearer 
+
 ```
 
 ## 📚 OpenAPI / Swagger
 
-- 📄 OpenAPI: `/v3/api-docs`
-- 🧭 Swagger UI: `/swagger-ui.html`
-- 📑 Especificação versionada: `docs/openapi.yaml`
+* 📄 OpenAPI: `/v3/api-docs`
+* 🧭 Swagger UI: `/swagger-ui.html`
+* 📑 Especificação versionada: `docs/openapi.yaml`
 
 > ⚠️ Em produção, avalie a exposição da documentação da API.
 
@@ -144,7 +202,7 @@ Authorization: Bearer <TOKEN>
 ### 🔴 Obrigatórias
 
 | Variável | Finalidade |
-|---|---|
+| --- | --- |
 | `AUTH_LDAP_URL` | Endpoint LDAP/LDAPS |
 | `AUTH_LDAP_BASE` | Base LDAP |
 | `AUTH_LDAP_USER_DN` | DN da conta de serviço |
@@ -155,7 +213,7 @@ Authorization: Bearer <TOKEN>
 ### 🟡 Opcionais
 
 | Variável | Padrão | Finalidade |
-|---|---:|---|
+| --- | --- | --- |
 | `SERVER_PORT` | `8181` | Porta HTTP |
 | `AUTH_LDAP_REQUIRE_SECURE` | `true` | Exigir LDAP seguro |
 | `AUTH_LDAP_CONNECT_TIMEOUT_MS` | `5000` | Timeout de conexão |
@@ -166,42 +224,50 @@ Authorization: Bearer <TOKEN>
 ## 🔒 Segurança
 
 ### ❌ Nunca versionar
-- Senhas LDAP
-- Segredos JWT
-- Tokens
-- Authorization headers
-- Certificados/chaves privadas
-- Credenciais reais de produção
+
+* Senhas LDAP
+* Segredos JWT
+* Tokens
+* Authorization headers
+* Certificados/chaves privadas
+* Credenciais reais de produção
 
 ### ✅ Recomendações
-- 🔐 Secret Manager / Vault / secrets do CI/CD
-- 🔒 HTTPS entre consumidores e Auth Service
-- 🔐 LDAPS entre Auth Service e AD
-- 🧱 Restrição de acesso à porta 8181
-- 🧾 Logs sem senhas
-- ⏱️ Timeouts definidos
-- 👤 Conta de serviço AD com privilégio mínimo
+
+* 🔐 Secret Manager / Vault / secrets do CI/CD
+* 🔒 HTTPS entre consumidores e Auth Service
+* 🔐 LDAPS entre Auth Service e AD
+* 🧱 Restrição de acesso à porta 8181
+* 🧾 Logs sem senhas
+* ⏱️ Timeouts definidos
+* 👤 Conta de serviço AD com privilégio mínimo
 
 ## 🧪 Desenvolvimento
 
 ### Pré-requisitos
-- ☕ Java 21
-- 🧰 Maven
-- 🏢 Active Directory / LDAP para integração
-- 🔐 LDAPS recomendado em ambientes reais
-- 🌐 DNS funcional
+
+* ☕ Java 21
+* 🧰 Maven
+* 🏢 Active Directory / LDAP para integração
+* 🔐 LDAPS recomendado em ambientes reais
+* 🌐 DNS funcional
 
 ### 🔨 Build
+
 ```bash
 mvn clean package
+
 ```
 
 ### 🧪 Testes
+
 ```bash
 mvn clean test
+
 ```
 
 ### ▶️ Execução
+
 ```bash
 export AUTH_LDAP_URL='ldaps://ad.example.local:636'
 export AUTH_LDAP_BASE='DC=example,DC=local'
@@ -215,37 +281,47 @@ export AUTH_LDAP_REQUIRE_SECURE='true'
 export SERVER_PORT='8181'
 
 mvn spring-boot:run
+
 ```
 
 ### 📦 JAR
+
 ```bash
 java -jar target/auth-service-1.0.0-SNAPSHOT.jar
+
 ```
 
 ## ❤️ Health Check
+
 ```bash
 curl -i http://localhost:8181/actuator/health
+
 ```
 
 Health check da aplicação não substitui um teste de autenticação contra o AD.
 
 ## 🔬 Teste de autenticação
+
 ```bash
 curl -i -X POST \
   -H 'Content-Type: application/json' \
   -d '{"username":"usuario","password":"SENHA","provider":"AD"}' \
   http://localhost:8181/api/v1/identity/authenticate
+
 ```
 
 ## 🎟️ Teste de JWT
+
 ```bash
 curl -i -X POST \
   -H 'Content-Type: application/json' \
   -d '{"username":"usuario","password":"SENHA","provider":"AD"}' \
   http://localhost:8181/api/v1/identity/token
+
 ```
 
 ## 🧱 Estrutura
+
 ```text
 auth-service/
 ├── .github/workflows/build.yml
@@ -265,12 +341,13 @@ auth-service/
 ├── src/test/
 ├── pom.xml
 └── README.md
+
 ```
 
 ## 🧩 Componentes
 
 | Componente | Responsabilidade |
-|---|---|
+| --- | --- |
 | `IdentityController` | API REST de identidade |
 | `AuthenticationService` | Orquestração da autenticação |
 | `TokenService` | Emissão de JWT |
@@ -284,6 +361,7 @@ auth-service/
 | `ApiExceptionHandler` | Tratamento de exceções |
 
 ## 🔄 Fluxo
+
 ```text
 1️⃣ Cliente envia credenciais
         ↓
@@ -296,26 +374,28 @@ auth-service/
 5️⃣ Group Resolver obtém grupos
         ↓
 6️⃣ Auth Service retorna identidade ou JWT
+
 ```
 
 ## 🏢 Integração corporativa
 
 Pode ser integrado a:
-- 🏢 ERP
-- 🔥 Firewalls
-- 🌐 Proxies
-- 🖥️ Portais
-- 🧩 APIs internas
-- 🔐 Gateways
-- ⚙️ Microserviços
-- 🛠️ Ferramentas administrativas
+
+* 🏢 ERP
+* 🔥 Firewalls
+* 🌐 Proxies
+* 🖥️ Portais
+* 🧩 APIs internas
+* 🔐 Gateways
+* ⚙️ Microserviços
+* 🛠️ Ferramentas administrativas
 
 > 💡 O consumidor deve mapear grupos AD para suas próprias permissões. Regras específicas de ERP, firewall ou outro produto não devem ser acopladas ao Auth Service.
 
 ## ⚠️ Códigos HTTP
 
 | Código | Significado |
-|---:|---|
+| --- | --- |
 | `200` | Operação concluída |
 | `400` | Requisição inválida |
 | `401` | Não autenticado / credencial inválida |
@@ -327,39 +407,43 @@ Pode ser integrado a:
 ## 🩺 Observabilidade
 
 O projeto utiliza Spring Boot Actuator e expõe:
-- ❤️ health
-- ℹ️ info
-- 📊 metrics
+
+* ❤️ health
+* ℹ️ info
+* 📊 metrics
 
 Os endpoints expostos devem ser protegidos de acordo com a política do ambiente.
 
 ## 🔄 CI/CD
 
 O repositório possui workflow em:
+
 ```text
 .github/workflows/build.yml
+
 ```
 
 Ele permite automatizar a validação do build através do GitHub Actions.
 
 ## 📖 Documentação
 
-- 📘 `docs/GUIA-INTEGRACAO-AUTH-SERVICE.md` — implantação e integração
-- 📑 `docs/openapi.yaml` — contrato OpenAPI
+* 📘 `docs/GUIA-INTEGRACAO-AUTH-SERVICE.md` — implantação e integração
+* 📑 `docs/openapi.yaml` — contrato OpenAPI
 
 ## 🗺️ Evolução
 
 Possíveis evoluções futuras:
-- 🔑 rotação automatizada de chaves
-- 🏢 múltiplos domínios/florestas AD
-- 🔗 múltiplos providers
-- 🔄 alta disponibilidade
-- ⚖️ load balancing
-- 📊 observabilidade ampliada
-- 🧾 auditoria ampliada
-- 🚦 rate limiting
-- 🛡️ controles adicionais de proteção da API
-- 🔁 mecanismos controlados de revogação
+
+* 🔑 rotação automatizada de chaves
+* 🏢 múltiplos domínios/florestas AD
+* 🔗 múltiplos providers
+* 🔄 alta disponibilidade
+* ⚖️ load balancing
+* 📊 observabilidade ampliada
+* 🧾 auditoria ampliada
+* 🚦 rate limiting
+* 🛡️ controles adicionais de proteção da API
+* 🔁 mecanismos controlados de revogação
 
 > ℹ️ Roadmap não significa funcionalidade disponível na versão atual.
 
@@ -369,34 +453,24 @@ Possíveis evoluções futuras:
 
 Foco atual: autenticação corporativa, resolução de identidade, integração Active Directory/LDAP e emissão de tokens JWT.
 
-@@ -293,22 +293,13 @@
- 
- ## 🔒 Licença
- 
--### 🚫 Proprietária — Todos os direitos reservados
+## 🔒 Licença
 
-+### 📄 Licença MIT
- 
--Este software é **proprietário e fechado**.
-+Este projeto está licenciado sob os termos da **Licença MIT**.
+### 📄 Licença MIT
 
-Sem autorização expressa do titular dos direitos, não é concedida permissão para:
-- ❌ copiar
-- ❌ redistribuir
-- ❌ modificar
-- ❌ publicar
-- ❌ sublicenciar
-- ❌ comercializar
-- ❌ criar obras derivadas
+Este projeto está licenciado sob os termos da **Licença MIT**.
 
-O acesso ao código-fonte por meio do repositório privado **não constitui concessão de licença de uso, distribuição ou exploração comercial**.
+É concedida permissão, gratuitamente, a qualquer pessoa que obtenha uma cópia deste software e dos ficheiros de documentação associados, para tratar o Software sem restrições, incluindo, sem limitação, os direitos de usar, copiar, modificar, fundir, publicar, distribuir, sublicenciar e/ou vender cópias do Software.
 
-Este projeto **não é open source** e não está disponibilizado sob MIT, Apache-2.0, GPL, AGPL, BSD ou outra licença aberta.
+O software é fornecido "tal como está", sem garantia de qualquer tipo, expressa ou implícita. Consulte o ficheiro `LICENSE` no repositório para obter o texto completo da licença.
 
-Qualquer uso além das permissões expressamente concedidas pelo titular depende de autorização específica.
+Copyright (c) 2026 Euripedes Batista de Paiva Junior. Todos os direitos reservados.
 
 ---
 
 🔐 **Identity first. Security by design.** 🛡️
 
-🚀 **Private • Enterprise • Secure • Stateless**
+🚀 **Open Source • Enterprise • Secure • Stateless**
+
+```
+
+```
