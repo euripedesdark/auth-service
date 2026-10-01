@@ -369,11 +369,15 @@ Possíveis evoluções futuras:
 
 Foco atual: autenticação corporativa, resolução de identidade, integração Active Directory/LDAP e emissão de tokens JWT.
 
-## 🔒 Licença
-
-### 🚫 Proprietária — Todos os direitos reservados
-
-Este software é **proprietário e fechado**.
+@@ -293,22 +293,13 @@
+ 
+ ## 🔒 Licença
+ 
+-### 🚫 Proprietária — Todos os direitos reservados
++### 📄 Licença MIT
+ 
+-Este software é **proprietário e fechado**.
++Este projeto está licenciado sob os termos da **Licença MIT**.
 
 Sem autorização expressa do titular dos direitos, não é concedida permissão para:
 - ❌ copiar
