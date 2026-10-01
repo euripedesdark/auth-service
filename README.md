@@ -1,4 +1,3 @@
-Aqui está a alteração efetuada na seção de **Licença** do ficheiro `auth-service.md`, atualizando o licenciamento para a **MIT License** e incluindo o aviso de direitos de autor do titular:
 
 ```markdown
 @@ -293,22 +293,13 @@
