@@ -455,13 +455,13 @@ Foco atual: autenticação corporativa, resolução de identidade, integração 
 
 ## 🔒 Licença
 
-### 📄 Licença MIT
+### 📄 Licença Apache 2.0
 
-Este projeto está licenciado sob os termos da **Licença MIT**.
+Este projeto está licenciado sob a **Licença Apache 2.0**.
 
-É concedida permissão, gratuitamente, a qualquer pessoa que obtenha uma cópia deste software e dos ficheiros de documentação associados, para tratar o Software sem restrições, incluindo, sem limitação, os direitos de usar, copiar, modificar, fundir, publicar, distribuir, sublicenciar e/ou vender cópias do Software.
+É concedida permissão para usar, reproduzir, modificar, distribuir e sublicenciar este software, desde que sejam mantidos os avisos de direitos de autor originais e que os ficheiros modificados sejam claramente identificados.
 
-O software é fornecido "tal como está", sem garantia de qualquer tipo, expressa ou implícita. Consulte o ficheiro `LICENSE` no repositório para obter o texto completo da licença.
+O software é fornecido "tal como está", sem garantias explícitas ou implícitas. Para obter o texto completo e os termos legais, consulte o ficheiro `LICENSE` na raiz do repositório.
 
 Copyright (c) 2026 Euripedes Batista de Paiva Junior. Todos os direitos reservados.
 
