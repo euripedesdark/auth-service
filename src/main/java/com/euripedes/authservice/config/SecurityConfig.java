@@ -12,14 +12,25 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
-    @Bean SecurityFilterChain securityFilterChain(HttpSecurity http,AdProvider adProvider)throws Exception{
-        http.csrf(c->c.disable()).sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http,AdProvider adProvider)throws Exception{
+        http.csrf(c->c.disable())
+            .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .requestCache(c->c.disable()).formLogin(f->f.disable()).logout(l->l.disable())
-            .authorizeHttpRequests(a->a.requestMatchers("/api/v1/identity/authenticate","/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
-                .requestMatchers("/actuator/health").permitAll().requestMatchers(HttpMethod.GET,"/api/v1/identity/**").authenticated().anyRequest().denyAll())
-            .authenticationProvider(adProvider).httpBasic(Customizer.withDefaults()).oauth2ResourceServer(o->o.jwt(Customizer.withDefaults()))
-            .headers(h->h.contentTypeOptions(Customizer.withDefaults()).frameOptions(f->f.deny()).httpStrictTransportSecurity(Customizer.withDefaults()))
-            .exceptionHandling(e->e.authenticationEntryPoint((req,res,ex)->res.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+            .authorizeHttpRequests(a->a
+                .requestMatchers("/api/v1/identity/authenticate","/api/v1/identity/token",
+                    "/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/v1/identity/**").authenticated()
+                .anyRequest().denyAll())
+            .authenticationProvider(adProvider)
+            .httpBasic(Customizer.withDefaults())
+            .oauth2ResourceServer(o->o.jwt(Customizer.withDefaults()))
+            .headers(h->h.contentTypeOptions(Customizer.withDefaults())
+                .frameOptions(f->f.deny())
+                .httpStrictTransportSecurity(Customizer.withDefaults()))
+            .exceptionHandling(e->e
+                .authenticationEntryPoint((req,res,ex)->res.sendError(HttpServletResponse.SC_UNAUTHORIZED))
                 .accessDeniedHandler((req,res,ex)->res.sendError(HttpServletResponse.SC_FORBIDDEN)));
         return http.build();
     }
