@@ -374,6 +374,7 @@ Foco atual: autenticação corporativa, resolução de identidade, integração 
  ## 🔒 Licença
  
 -### 🚫 Proprietária — Todos os direitos reservados
+
 +### 📄 Licença MIT
  
 -Este software é **proprietário e fechado**.
