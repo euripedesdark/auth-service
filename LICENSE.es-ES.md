@@ -1,3 +1,5 @@
+NOTA: traducción no oficial de la GNU AGPLv3. El único texto oficial es el original en inglés (LICENSE.md). En caso de divergencia, vale el original.
+
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
