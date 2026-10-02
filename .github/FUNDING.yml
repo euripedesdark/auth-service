@@ -1,0 +1,5 @@
+# Sponsor button: o bloco custom do GitHub aceita SOMENTE URLs.
+# PIX e Wise ficam no DONATE.md, em 4 idiomas.
+
+custom:
+  - "https://github.com/euripedesdark/auth-service/blob/main/DONATE.md"
