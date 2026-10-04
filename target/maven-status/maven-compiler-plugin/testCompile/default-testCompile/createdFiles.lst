@@ -1,0 +1,6 @@
+com/euripedes/authservice/service/AuthenticationServiceTest.class
+com/euripedes/authservice/service/AuthenticationServiceTest$1.class
+com/euripedes/authservice/provider/PgPropertiesCredentialUrlTest.class
+com/euripedes/authservice/config/LdapConfigTest.class
+com/euripedes/authservice/config/TokenConfigTest.class
+com/euripedes/authservice/resolver/GroupResolverTest.class

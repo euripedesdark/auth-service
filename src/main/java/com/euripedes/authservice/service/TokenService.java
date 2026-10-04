@@ -3,9 +3,11 @@ package com.euripedes.authservice.service;
 import com.euripedes.authservice.config.TokenProperties;
 import com.euripedes.authservice.contract.IdentityDto;
 import com.euripedes.authservice.contract.TokenResponseDto;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
 
@@ -18,9 +20,19 @@ public class TokenService {
         Instant now=Instant.now();
         Instant exp=now.plusSeconds(properties.getTtlSeconds());
         JwtClaimsSet claims=JwtClaimsSet.builder().issuer(properties.getIssuer()).issuedAt(now).expiresAt(exp)
-            .subject(identity.identityId()).claim("username",identity.username()).claim("provider",identity.provider())
-            .claim("groups",identity.groups()).build();
-        String token=encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+              .subject(identity.identityId()).claim("username",identity.username()).claim("provider",identity.provider())
+              .claim("groups",identity.groups()).build();
+
+        // O header precisa declarar HS256 explicitamente.
+        //
+        // JwtEncoderParameters.from(claims) deixa o header nulo, e o
+        // NimbusJwtEncoder usa RS256 como default. Como a chave aqui e' HMAC, o
+        // JWKMatcher procurava uma chave RS256, nao achava nenhuma e o encode
+        // falhava com "Failed to select a JWK signing key" -- o /token devolvia
+        // 401 para todos os provedores.
+        JwsHeader header=JwsHeader.with(MacAlgorithm.HS256).build();
+
+        String token=encoder.encode(JwtEncoderParameters.from(header,claims)).getTokenValue();
         return new TokenResponseDto(token,"Bearer",properties.getTtlSeconds(),identity);
     }
 }

@@ -17,6 +17,18 @@ auth:
     require-secure: ${AUTH_LDAP_REQUIRE_SECURE:true}
     connect-timeout-ms: ${AUTH_LDAP_CONNECT_TIMEOUT_MS:5000}
     read-timeout-ms: ${AUTH_LDAP_READ_TIMEOUT_MS:5000}
+  pg:
+    url: ${AUTH_PG_URL:}
+    schema: ${AUTH_PG_SCHEMA:brasil_saas}
+    ssl-mode: ${AUTH_PG_SSL_MODE:verify-ca}
+    ssl-root-cert: ${AUTH_PG_SSL_ROOT_CERT:}
+    ssl-cert: ${AUTH_PG_SSL_CERT:}
+    ssl-key: ${AUTH_PG_SSL_KEY:}
+    credential-ssl-mode: ${AUTH_PG_CREDENTIAL_SSL_MODE:require}
+    service-user: ${AUTH_PG_SERVICE_USER:sa}
+    access-group: ${AUTH_PG_ACCESS_GROUP:BRASIL_SAAS_TODOS}
+    connect-timeout-seconds: ${AUTH_PG_CONNECT_TIMEOUT:5}
+    query-timeout-seconds: ${AUTH_PG_QUERY_TIMEOUT:10}
   token:
     secret: ${AUTH_TOKEN_SECRET}
     issuer: ${AUTH_TOKEN_ISSUER:auth-service}
