@@ -19,8 +19,10 @@ input,button{padding:.5em;margin:.25em 0}input{width:95%}
 <h2>1. Login (usuário do domínio)</h2>
 <input id="l-user" placeholder="usuário (ex.: administrator)">
 <input id="l-pass" type="password" placeholder="senha">
+<input id="l-domain" placeholder="domínio (vazio = padrão; ex.: outro-dominio.local)">
 <button onclick="login()">Entrar</button>
 <div id="l-msg"></div>
+<div id="l-dns"></div>
 </section>
 
 <div id="app" class="hidden">
@@ -62,12 +64,41 @@ input,button{padding:.5em;margin:.25em 0}input{width:95%}
 <script>
 const BASE=((location.pathname==='/auth'||location.pathname.startsWith('/auth/'))?'/auth':'');
 let AUTH="";
+function AH(h){if(window._domain)h["X-Domain"]=window._domain;return h;}
 function log(t){document.getElementById('log').textContent+=t+"\n";}
 async function login(){
   const u=document.getElementById('l-user').value.trim();
   const p=document.getElementById('l-pass').value;
+  const d=document.getElementById('l-domain').value.trim();
+  document.getElementById('l-dns').textContent="";
+  if(d){
+    try{
+      const rd=await fetch(BASE+'/api/v1/identity/resolve-domain?domain='+encodeURIComponent(d));
+      if(rd.ok){
+        const rj=await rd.json();
+        document.getElementById('l-dns').textContent="Domínio resolve em: "+rj.ips.join(", ");
+      } else {
+        document.getElementById('l-msg').textContent="Domínio não resolve no DNS da máquina.";
+        return;
+      }
+    }catch(e){document.getElementById('l-msg').textContent="Falha de rede.";return;}
+    const r=await fetch(BASE+'/api/v1/identity/authenticate-domain',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u,password:p,domain:d})});
+    if(r.ok){
+      const j=await r.json();
+      AUTH="Basic "+btoa(u+":"+p);
+      window._domain=d;
+      document.getElementById('l-msg').textContent="Logado via "+d+": "+j.username;
+      document.getElementById('app').classList.remove('hidden');
+      log("login ok via dominio "+d+": "+j.username);
+    } else {
+      document.getElementById('l-msg').textContent="Falha no login via domínio ("+r.status+")";
+    }
+    return;
+  }
   AUTH="Basic "+btoa(u+":"+p);
-  const r=await fetch(BASE+'/api/v1/identity/me',{headers:{'Authorization':AUTH}});
+  const r=await fetch(BASE+'/api/v1/identity/me',{headers:AH({'Authorization':AUTH})});
   if(r.ok){
     const j=await r.json();
     document.getElementById('l-msg').textContent="Logado: "+j.username;
@@ -80,7 +111,7 @@ async function login(){
 async function emitir(){
   const u=document.getElementById('c-user').value.trim();
   const r=await fetch(BASE+'/api/v1/certificates/issue',{method:'POST',
-    headers:{'Authorization':AUTH,'Content-Type':'application/json'},
+    headers:AH({'Authorization':AUTH,'Content-Type':'application/json'}),
     body:JSON.stringify({username:u})});
   const j=await r.json();
   document.getElementById('c-msg').textContent=r.ok?("Emitido: "+j.id+" ("+j.status+")"):("Erro: "+(j.error||r.status));
@@ -90,7 +121,7 @@ async function emitir(){
 async function mfa(){
   const u=document.getElementById('m-user').value.trim();
   const r=await fetch(BASE+'/api/v1/mfa/setup',{method:'POST',
-    headers:{'Authorization':AUTH,'Content-Type':'application/json'},
+    headers:AH({'Authorization':AUTH,'Content-Type':'application/json'}),
     body:JSON.stringify({username:u})});
   const j=await r.json();
   if(!r.ok){document.getElementById('m-out').textContent="Erro ("+r.status+")";return;}
@@ -105,7 +136,7 @@ async function mfa(){
 async function revogar(){
   const u=document.getElementById('r-user').value.trim();
   const r=await fetch(BASE+'/api/v1/certificates/revoke',{method:'POST',
-    headers:{'Authorization':AUTH,'Content-Type':'application/json'},
+    headers:AH({'Authorization':AUTH,'Content-Type':'application/json'}),
     body:JSON.stringify({username:u})});
   const j=await r.json();
   document.getElementById('r-msg').textContent=r.ok?("Revogados: "+j.length):("Erro ("+r.status+")");
@@ -113,14 +144,14 @@ async function revogar(){
   if(r.ok){pendentes();revogados();}
 }
 async function revogados(){
-  const r=await fetch(BASE+'/api/v1/certificates/revoked',{headers:{'Authorization':AUTH}});
+  const r=await fetch(BASE+'/api/v1/certificates/revoked',{headers:AH({'Authorization':AUTH})});
   const j=await r.json();
   document.getElementById('v-out').innerHTML=j.length
     ? "<ul>"+j.map(x=>"<li>"+x.username+" — "+x.id+"</li>").join("")+"</ul>"
     : "Nada revogado.";
 }
 async function pendentes(){
-  const r=await fetch(BASE+'/api/v1/certificates/pending',{headers:{'Authorization':AUTH}});
+  const r=await fetch(BASE+'/api/v1/certificates/pending',{headers:AH({'Authorization':AUTH})});
   const j=await r.json();
   document.getElementById('p-out').innerHTML=j.length
     ? "<ul>"+j.map(x=>"<li>"+x.username+" — "+x.id+" — "+x.status+"</li>").join("")+"</ul>"
