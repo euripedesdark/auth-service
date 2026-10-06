@@ -1,5 +1,0 @@
-/home/euripedes/auth-service/src/test/java/com/euripedes/authservice/config/LdapConfigTest.java
-/home/euripedes/auth-service/src/test/java/com/euripedes/authservice/config/TokenConfigTest.java
-/home/euripedes/auth-service/src/test/java/com/euripedes/authservice/provider/PgPropertiesCredentialUrlTest.java
-/home/euripedes/auth-service/src/test/java/com/euripedes/authservice/resolver/GroupResolverTest.java
-/home/euripedes/auth-service/src/test/java/com/euripedes/authservice/service/AuthenticationServiceTest.java

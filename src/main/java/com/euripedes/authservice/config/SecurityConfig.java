@@ -21,7 +21,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/identity/authenticate","/api/v1/identity/token",
                     "/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/v1/identity/**").authenticated()
+                .requestMatchers("/","/admin","/admin/","/admin/**","/mfa","/mfa/","/mfa/**").permitAll()
+                .requestMatchers(HttpMethod.POST,"/api/v1/mfa/verify").permitAll()
+                .requestMatchers(HttpMethod.POST,"/api/v1/certificates/download-token").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/v1/mfa/qr/**","/api/v1/certificates/download").permitAll()
+                .requestMatchers(HttpMethod.POST,"/api/v1/mfa/setup","/api/v1/certificates/issue").authenticated()
+                .requestMatchers(HttpMethod.GET,"/api/v1/identity/**","/api/v1/certificates/pending").authenticated()
                 .anyRequest().denyAll())
             .authenticationProvider(adProvider)
             .httpBasic(Customizer.withDefaults())

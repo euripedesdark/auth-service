@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auth Service — Admin</title>
+<style>
+body{font-family:sans-serif;max-width:720px;margin:2em auto;padding:0 1em}
+section{border:1px solid #ccc;border-radius:8px;padding:1em;margin:1em 0}
+input,button{padding:.5em;margin:.25em 0}input{width:95%}
+#qr{max-width:300px}#log{white-space:pre-wrap;background:#f4f4f4;padding:.5em}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<h1>Admin — Certificados e MFA</h1>
+
+<section id="sec-login">
+<h2>1. Login (usuário do domínio)</h2>
+<input id="l-user" placeholder="usuário (ex.: administrator)">
+<input id="l-pass" type="password" placeholder="senha">
+<button onclick="login()">Entrar</button>
+<div id="l-msg"></div>
+</section>
+
+<div id="app" class="hidden">
+<section>
+<h2>2. Emitir certificado</h2>
+<input id="c-user" placeholder="nome do usuário AD">
+<button onclick="emitir()">Emitir e marcar para download</button>
+<div id="c-msg"></div>
+</section>
+
+<section>
+<h2>3. Criar MFA (QR 5 min)</h2>
+<input id="m-user" placeholder="nome do usuário AD">
+<button onclick="mfa()">Gerar QR Code</button>
+<div id="m-out"></div>
+</section>
+
+<section>
+<h2>Pendentes de download</h2>
+<button onclick="pendentes()">Atualizar</button>
+<div id="p-out"></div>
+</section>
+
+<section>
+<h2>Log</h2>
+<div id="log"></div>
+</section>
+</div>
+
+<script>
+const BASE=((location.pathname==='/auth'||location.pathname.startsWith('/auth/'))?'/auth':'');
+let AUTH="";
+function log(t){document.getElementById('log').textContent+=t+"\n";}
+async function login(){
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value;
+  AUTH="Basic "+btoa(u+":"+p);
+  const r=await fetch(BASE+'/api/v1/identity/me',{headers:{'Authorization':AUTH}});
+  if(r.ok){
+    const j=await r.json();
+    document.getElementById('l-msg').textContent="Logado: "+j.username;
+    document.getElementById('app').classList.remove('hidden');
+    log("login ok: "+j.username);
+  } else {
+    document.getElementById('l-msg').textContent="Falha no login ("+r.status+")";
+  }
+}
+async function emitir(){
+  const u=document.getElementById('c-user').value.trim();
+  const r=await fetch(BASE+'/api/v1/certificates/issue',{method:'POST',
+    headers:{'Authorization':AUTH,'Content-Type':'application/json'},
+    body:JSON.stringify({username:u})});
+  const j=await r.json();
+  document.getElementById('c-msg').textContent=r.ok?("Emitido: "+j.id+" ("+j.status+")"):("Erro: "+(j.error||r.status));
+  log("emitir "+u+": "+r.status);
+  if(r.ok) pendentes();
+}
+async function mfa(){
+  const u=document.getElementById('m-user').value.trim();
+  const r=await fetch(BASE+'/api/v1/mfa/setup',{method:'POST',
+    headers:{'Authorization':AUTH,'Content-Type':'application/json'},
+    body:JSON.stringify({username:u})});
+  const j=await r.json();
+  if(!r.ok){document.getElementById('m-out').textContent="Erro ("+r.status+")";return;}
+  const exp=new Date(j.expiresAt*1000).toLocaleTimeString();
+  document.getElementById('m-out').innerHTML=
+    '<p>Usuário: <b>'+j.username+'</b> — expira às '+exp+'</p>'+
+    '<img id="qr" src="'+j.qrDataUrl+'"><br>'+
+    '<a href="'+BASE+j.qrPngUrl+'" download="mfa-'+j.username+'.png"><button>Salvar QR (enviar por e-mail/WhatsApp)</button></a>'+
+    '<p>Segredo: <code>'+j.secret+'</code></p>';
+  log("mfa criado para "+u+" id="+j.id);
+}
+async function pendentes(){
+  const r=await fetch(BASE+'/api/v1/certificates/pending',{headers:{'Authorization':AUTH}});
+  const j=await r.json();
+  document.getElementById('p-out').innerHTML=j.length
+    ? "<ul>"+j.map(x=>"<li>"+x.username+" — "+x.id+" — "+x.status+"</li>").join("")+"</ul>"
+    : "Nada pendente.";
+}
+</script>
+</body>
+</html>
