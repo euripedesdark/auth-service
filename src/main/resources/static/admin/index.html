@@ -45,6 +45,15 @@ input,button{padding:.5em;margin:.25em 0}input{width:95%}
 </section>
 
 <section>
+<h2>4. Revogar certificado</h2>
+<input id="r-user" placeholder="nome do usuário AD">
+<button onclick="revogar()">Revogar tudo do usuário</button>
+<div id="r-msg"></div>
+<button onclick="revogados()">Ver revogados</button>
+<div id="v-out"></div>
+</section>
+
+<section>
 <h2>Log</h2>
 <div id="log"></div>
 </section>
@@ -92,6 +101,23 @@ async function mfa(){
     '<a href="'+BASE+j.qrPngUrl+'" download="mfa-'+j.username+'.png"><button>Salvar QR (enviar por e-mail/WhatsApp)</button></a>'+
     '<p>Segredo: <code>'+j.secret+'</code></p>';
   log("mfa criado para "+u+" id="+j.id);
+}
+async function revogar(){
+  const u=document.getElementById('r-user').value.trim();
+  const r=await fetch(BASE+'/api/v1/certificates/revoke',{method:'POST',
+    headers:{'Authorization':AUTH,'Content-Type':'application/json'},
+    body:JSON.stringify({username:u})});
+  const j=await r.json();
+  document.getElementById('r-msg').textContent=r.ok?("Revogados: "+j.length):("Erro ("+r.status+")");
+  log("revogar "+u+": "+r.status);
+  if(r.ok){pendentes();revogados();}
+}
+async function revogados(){
+  const r=await fetch(BASE+'/api/v1/certificates/revoked',{headers:{'Authorization':AUTH}});
+  const j=await r.json();
+  document.getElementById('v-out').innerHTML=j.length
+    ? "<ul>"+j.map(x=>"<li>"+x.username+" — "+x.id+"</li>").join("")+"</ul>"
+    : "Nada revogado.";
 }
 async function pendentes(){
   const r=await fetch(BASE+'/api/v1/certificates/pending',{headers:{'Authorization':AUTH}});

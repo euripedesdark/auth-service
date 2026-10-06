@@ -16,6 +16,7 @@ Sans base de données au cœur : secrets MFA en mémoire, certificats sur disque
    - Cliquez **Enregistrer le QR** pour télécharger le PNG et l'envoyer par e-mail/WhatsApp.
    - Codes de **30 secondes**, compatibles Google/Microsoft Authenticator, Aegis, Authy.
 5. **En attente :** liste les certificats en attente de téléchargement.
+6. **Révoquer :** saisissez l'utilisateur → **Révoquer** (marque `REVOGADO`, bloque le téléchargement).
 
 ## 2. Parcours utilisateur (`/mfa/` sur le port 80 ou `/auth/mfa/`)
 
@@ -23,7 +24,7 @@ Sans base de données au cœur : secrets MFA en mémoire, certificats sur disque
 2. Saisissez votre **utilisateur** → **Suivant**.
 3. Saisissez le **code à 6 chiffres** de l'application → **Valider et télécharger**.
 4. `certificado.zip` se télécharge automatiquement
-   (clé `.key.pem` + demande `.req.csr` + `LEIA-ME`).
+   (clé `.key.pem` + demande `.req.csr` + certificat `.crt` pour Windows + `LEIA-ME`).
 5. Chaque code et chaque lien ne valent **qu'une seule fois**.
 
 ## 3. Endpoints
@@ -36,6 +37,8 @@ Sans base de données au cœur : secrets MFA en mémoire, certificats sur disque
 | POST | `/api/v1/mfa/verify` | — | Valide `{username, code}` → `mfaId` |
 | POST | `/api/v1/certificates/issue` | admin | Émet pour un utilisateur AD |
 | GET | `/api/v1/certificates/pending` | admin | Liste les certificats en attente |
+| POST | `/api/v1/certificates/revoke` | admin | Révoque tout de l'utilisateur |
+| GET | `/api/v1/certificates/revoked` | admin | Liste les certificats révoqués |
 | POST | `/api/v1/certificates/download-token` | mfaId | Échange le MFA contre un jeton unique (5 min) |
 | GET | `/api/v1/certificates/download?token=` | token | Télécharge le ZIP (usage unique) |
 

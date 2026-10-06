@@ -16,6 +16,7 @@ Sin base de datos en el núcleo: secretos MFA en memoria, certificados en disco.
    - Clic en **Guardar QR** para descargar el PNG y enviarlo por correo/WhatsApp.
    - Códigos de **30 segundos**, compatibles con Google/Microsoft Authenticator, Aegis, Authy.
 5. **Pendientes:** lista los certificados esperando descarga.
+6. **Revocar:** escriba el usuario → **Revocar** (marca `REVOGADO`, bloquea la descarga).
 
 ## 2. Flujo del usuario (`/mfa/` en puerto 80 o `/auth/mfa/`)
 
@@ -23,7 +24,7 @@ Sin base de datos en el núcleo: secretos MFA en memoria, certificados en disco.
 2. Escriba su **usuario** → **Siguiente**.
 3. Escriba el **código de 6 dígitos** de la app → **Validar y descargar**.
 4. `certificado.zip` se descarga automáticamente
-   (clave `.key.pem` + solicitud `.req.csr` + `LEIA-ME`).
+   (clave `.key.pem` + solicitud `.req.csr` + certificado `.crt` para Windows + `LEIA-ME`).
 5. Cada código y cada enlace valen **una sola vez**.
 
 ## 3. Endpoints
@@ -36,6 +37,8 @@ Sin base de datos en el núcleo: secretos MFA en memoria, certificados en disco.
 | POST | `/api/v1/mfa/verify` | — | Valida `{username, code}` → `mfaId` |
 | POST | `/api/v1/certificates/issue` | admin | Emite para un usuario AD |
 | GET | `/api/v1/certificates/pending` | admin | Lista pendientes |
+| POST | `/api/v1/certificates/revoke` | admin | Revoca todo del usuario |
+| GET | `/api/v1/certificates/revoked` | admin | Lista revocados |
 | POST | `/api/v1/certificates/download-token` | mfaId | Canjea MFA por token único (5 min) |
 | GET | `/api/v1/certificates/download?token=` | token | Descarga el ZIP (un solo uso) |
 

@@ -16,6 +16,7 @@ No database in the core: MFA secrets in memory, certificates on disk.
    - Click **Save QR** to download the PNG and send it by email/WhatsApp.
    - **30-second** codes, compatible with Google/Microsoft Authenticator, Aegis, Authy.
 5. **Pending:** lists certificates waiting for download.
+6. **Revoke:** type the user → **Revoke** (marks `REVOGADO`, blocks download).
 
 ## 2. User flow (`/mfa/` on port 80 or `/auth/mfa/`)
 
@@ -23,7 +24,7 @@ No database in the core: MFA secrets in memory, certificates on disk.
 2. Type your **username** → **Next**.
 3. Type the **6-digit code** from the app → **Validate and download**.
 4. `certificado.zip` downloads automatically
-   (`.key.pem` key + `.req.csr` request + `README`).
+   (`.key.pem` key + `.req.csr` request + `.crt` certificate for Windows + `README`).
 5. Each code and each download link works **only once**.
 
 ## 3. Endpoints
@@ -36,6 +37,8 @@ No database in the core: MFA secrets in memory, certificates on disk.
 | POST | `/api/v1/mfa/verify` | — | Validates `{username, code}` → `mfaId` |
 | POST | `/api/v1/certificates/issue` | admin | Issues for an AD user |
 | GET | `/api/v1/certificates/pending` | admin | Lists pending |
+| POST | `/api/v1/certificates/revoke` | admin | Revokes everything of the user |
+| GET | `/api/v1/certificates/revoked` | admin | Lists revoked |
 | POST | `/api/v1/certificates/download-token` | mfaId | Exchanges MFA for a single-use token (5 min) |
 | GET | `/api/v1/certificates/download?token=` | token | Downloads the ZIP (single use) |
 

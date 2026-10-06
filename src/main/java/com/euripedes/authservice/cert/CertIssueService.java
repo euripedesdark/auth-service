@@ -68,6 +68,7 @@ public class CertIssueService {
 
         Files.writeString(dir.resolve(id + ".key.pem"), toPem(kp.getPrivate()));
         Files.writeString(dir.resolve(id + ".req.csr"), toPem(csr));
+        Files.writeString(dir.resolve(id + ".crt.pem"), toPem(selfSigned(clean, kp)));
         long now = Instant.now().getEpochSecond();
         String meta = "{\"id\":\"" + id + "\",\"username\":\"" + clean + "\",\"dn\":\""
             + identity.identityId() + "\",\"status\":\"PENDENTE_DOWNLOAD\",\"createdAt\":" + now
@@ -106,26 +107,85 @@ public class CertIssueService {
         return null;
     }
 
-    /** Consome o token e devolve o ZIP (chave + CSR + meta). Uso único. */
+    /** Consome o token e devolve o ZIP (chave + CSR + CRT). Uso único. */
     public byte[] download(String token) throws Exception {
         DlToken dt = tokens.remove(token);
         if (dt == null || dt.expiresAt() < Instant.now().getEpochSecond()) return null;
         Path meta = findMeta(dt.certId());
         if (meta == null) return null;
+        String status = str(Files.readString(meta, StandardCharsets.UTF_8), "status");
+        if (!"PENDENTE_DOWNLOAD".equals(status)) return null;
         Path dir = meta.getParent();
         String user = dir.getFileName().toString();
         var zip = new java.io.ByteArrayOutputStream();
         try (var z = new ZipOutputStream(zip, StandardCharsets.UTF_8)) {
             addFile(z, dir.resolve(dt.certId() + ".key.pem"), user + ".key.pem");
             addFile(z, dir.resolve(dt.certId() + ".req.csr"), user + ".req.csr");
+            addFile(z, dir.resolve(dt.certId() + ".crt.pem"), user + ".crt");
             addText(z, "LEIA-ME.txt", "Certificado de " + user + ".\n"
-                + "Assine o CSR na CA e devolva o certificado ao usuario.\n");
+                + user + ".crt: certificado autoassinado (vale para Windows/testes).\n"
+                + user + ".req.csr: pedido para assinar na CA oficial.\n");
         }
         String j = Files.readString(meta, StandardCharsets.UTF_8)
             .replace("PENDENTE_DOWNLOAD", "BAIXADO");
         Files.writeString(meta, j, StandardCharsets.UTF_8);
         audit.authenticationSuccess(user, "CERT_DOWNLOAD");
         return zip.toByteArray();
+    }
+
+    /** Revoga todos os certificados do usuário (admin). */
+    public List<Issued> revoke(String revokedBy, String username) {
+        List<Issued> out = new ArrayList<>();
+        try {
+            Path dir = baseDir.resolve(safe(username.trim()));
+            if (!Files.isDirectory(dir)) return out;
+            try (var files = Files.list(dir)) {
+                for (Path m : files.filter(f -> f.toString().endsWith(".meta.json")).toList()) {
+                    String j = Files.readString(m, StandardCharsets.UTF_8);
+                    if (j.contains("\"status\":\"REVOGADO\"")) continue;
+                    long now = Instant.now().getEpochSecond();
+                    j = j.replaceFirst("\"status\":\"[^\"]*\"",
+                        "\"status\":\"REVOGADO\",\"revokedAt\":" + now
+                        + ",\"revokedBy\":\"" + revokedBy + "\"");
+                    Files.writeString(m, j, StandardCharsets.UTF_8);
+                    out.add(parseMeta(j));
+                }
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Falha ao revogar", e);
+        }
+        if (!out.isEmpty()) audit.authenticationSuccess(username, "CERT_REVOKED");
+        return out;
+    }
+
+    public List<Issued> revoked() throws Exception {
+        List<Issued> out = new ArrayList<>();
+        if (!Files.exists(baseDir)) return out;
+        try (var users = Files.list(baseDir)) {
+            for (Path u : users.toList()) {
+                if (!Files.isDirectory(u)) continue;
+                try (var files = Files.list(u)) {
+                    for (Path m : files.filter(f -> f.toString().endsWith(".meta.json")).toList()) {
+                        String j = Files.readString(m, StandardCharsets.UTF_8);
+                        if (j.contains("\"status\":\"REVOGADO\"")) out.add(parseMeta(j));
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    private java.security.cert.X509Certificate selfSigned(String username, KeyPair kp) throws Exception {
+        var now = new java.util.Date();
+        var until = new java.util.Date(now.getTime() + 365L * 24 * 60 * 60 * 1000);
+        var name = new org.bouncycastle.asn1.x500.X500Name("CN=" + username);
+        var serial = new java.math.BigInteger(64, new java.security.SecureRandom());
+        var builder = new org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder(
+            name, serial, now, until, name, kp.getPublic());
+        builder.addExtension(org.bouncycastle.asn1.x509.Extension.basicConstraints, true,
+            new org.bouncycastle.asn1.x509.BasicConstraints(false));
+        var signer = new JcaContentSignerBuilder("SHA256withRSA").build(kp.getPrivate());
+        return new org.bouncycastle.cert.jcajce.JcaX509CertificateConverter().getCertificate(builder.build(signer));
     }
 
     private Path findMeta(String certId) throws Exception {

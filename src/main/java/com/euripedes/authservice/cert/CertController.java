@@ -44,6 +44,19 @@ public class CertController {
         return service.pending();
     }
 
+    @PostMapping("/revoke")
+    @Operation(summary = "Revoga certificados do usuário (admin)")
+    public List<CertIssueService.Issued> revoke(Authentication admin,
+                                                @Valid @RequestBody IssueRequest req) {
+        return service.revoke(admin.getName(), req.username());
+    }
+
+    @GetMapping("/revoked")
+    @Operation(summary = "Lista certificados revogados (admin)")
+    public List<CertIssueService.Issued> revoked() throws Exception {
+        return service.revoked();
+    }
+
     @PostMapping("/download-token")
     @Operation(summary = "Troca MFA válido por token único de download")
     public ResponseEntity<?> downloadToken(@Valid @RequestBody TokenRequest req) throws Exception {
