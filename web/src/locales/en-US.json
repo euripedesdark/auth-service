@@ -1,0 +1,53 @@
+{
+  "app": { "adminTitle": "Admin — Certificates and MFA", "userTitle": "Download your certificate" },
+  "login": {
+    "title": "Login (domain user)",
+    "user": "Username", "userPh": "username (e.g.: administrator)",
+    "password": "Password", "domain": "Domain",
+    "domainPh": "empty = default (e.g.: other-domain.local)",
+    "button": "Sign in",
+    "ok": "Signed in: {user}", "okDomain": "Signed in via {domain}: {user}",
+    "fail": "Login failed ({status})",
+    "dnsOk": "Domain resolves to: {ips}",
+    "dnsFail": "Domain does not resolve on this machine's DNS."
+  },
+  "issue": {
+    "title": "Issue certificate",
+    "userPh": "AD username",
+    "button": "Issue and mark for download",
+    "ok": "Issued: {id} ({status})",
+    "fail": "Error: AD user not found"
+  },
+  "mfa": {
+    "title": "Create MFA (5-min QR)",
+    "userPh": "AD username",
+    "button": "Generate QR Code",
+    "for": "User: {user} — expires at {time}",
+    "save": "Save QR (send by email/WhatsApp)",
+    "secret": "Secret:",
+    "fail": "Error ({status})"
+  },
+  "pending": { "title": "Pending downloads", "refresh": "Refresh", "empty": "Nothing pending." },
+  "revoke": {
+    "title": "Revoke certificate",
+    "userPh": "AD username",
+    "button": "Revoke everything of the user",
+    "ok": "Revoked: {n}",
+    "list": "View revoked",
+    "empty": "Nothing revoked."
+  },
+  "cols": { "user": "User", "id": "ID", "status": "Status" },
+  "user": {
+    "step1": "Your username",
+    "userPh": "username",
+    "next": "Next",
+    "step2": "App code (6 digits)",
+    "help": "Open the QR you received in the authenticator and type the current code.",
+    "codePh": "000000",
+    "verify": "Validate and download",
+    "checking": "Checking...",
+    "codeInvalid": "Invalid or expired code.",
+    "noPending": "MFA ok, but no pending certificate.",
+    "downloading": "OK! Downloading certificate..."
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "app": { "adminTitle": "Admin — Certificados e MFA", "userTitle": "Baixar seu certificado" },
+  "login": {
+    "title": "Login (usuário do domínio)",
+    "user": "Usuário", "userPh": "usuário (ex.: administrator)",
+    "password": "Senha", "domain": "Domínio",
+    "domainPh": "vazio = padrão (ex.: outro-dominio.local)",
+    "button": "Entrar",
+    "ok": "Logado: {user}", "okDomain": "Logado via {domain}: {user}",
+    "fail": "Falha no login ({status})",
+    "dnsOk": "Domínio resolve em: {ips}",
+    "dnsFail": "Domínio não resolve no DNS da máquina."
+  },
+  "issue": {
+    "title": "Emitir certificado",
+    "userPh": "nome do usuário AD",
+    "button": "Emitir e marcar para download",
+    "ok": "Emitido: {id} ({status})",
+    "fail": "Erro: usuário AD não encontrado"
+  },
+  "mfa": {
+    "title": "Criar MFA (QR 5 min)",
+    "userPh": "nome do usuário AD",
+    "button": "Gerar QR Code",
+    "for": "Usuário: {user} — expira às {time}",
+    "save": "Salvar QR (enviar por e-mail/WhatsApp)",
+    "secret": "Segredo:",
+    "fail": "Erro ({status})"
+  },
+  "pending": { "title": "Pendentes de download", "refresh": "Atualizar", "empty": "Nada pendente." },
+  "revoke": {
+    "title": "Revogar certificado",
+    "userPh": "nome do usuário AD",
+    "button": "Revogar tudo do usuário",
+    "ok": "Revogados: {n}",
+    "list": "Ver revogados",
+    "empty": "Nada revogado."
+  },
+  "cols": { "user": "Usuário", "id": "ID", "status": "Status" },
+  "user": {
+    "step1": "Seu usuário",
+    "userPh": "nome do usuário",
+    "next": "Avançar",
+    "step2": "Código do aplicativo (6 dígitos)",
+    "help": "Abra o QR que você recebeu no autenticador e digite o código atual.",
+    "codePh": "000000",
+    "verify": "Validar e baixar",
+    "checking": "Validando...",
+    "codeInvalid": "Código inválido ou expirado.",
+    "noPending": "MFA ok, mas sem certificado pendente.",
+    "downloading": "OK! Baixando certificado..."
+  }
+}

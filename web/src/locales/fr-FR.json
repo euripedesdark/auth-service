@@ -1,0 +1,53 @@
+{
+  "app": { "adminTitle": "Admin — Certificats et MFA", "userTitle": "Télécharger votre certificat" },
+  "login": {
+    "title": "Connexion (utilisateur du domaine)",
+    "user": "Utilisateur", "userPh": "utilisateur (ex. : administrator)",
+    "password": "Mot de passe", "domain": "Domaine",
+    "domainPh": "vide = défaut (ex. : autre-domaine.local)",
+    "button": "Se connecter",
+    "ok": "Connecté : {user}", "okDomain": "Connecté via {domain} : {user}",
+    "fail": "Échec de connexion ({status})",
+    "dnsOk": "Le domaine résout vers : {ips}",
+    "dnsFail": "Le domaine ne résout pas sur le DNS de la machine."
+  },
+  "issue": {
+    "title": "Émettre un certificat",
+    "userPh": "utilisateur AD",
+    "button": "Émettre et marquer pour téléchargement",
+    "ok": "Émis : {id} ({status})",
+    "fail": "Erreur : utilisateur AD introuvable"
+  },
+  "mfa": {
+    "title": "Créer un MFA (QR 5 min)",
+    "userPh": "utilisateur AD",
+    "button": "Générer le QR",
+    "for": "Utilisateur : {user} — expire à {time}",
+    "save": "Enregistrer le QR (envoyer par e-mail/WhatsApp)",
+    "secret": "Secret :",
+    "fail": "Erreur ({status})"
+  },
+  "pending": { "title": "Téléchargements en attente", "refresh": "Actualiser", "empty": "Rien en attente." },
+  "revoke": {
+    "title": "Révoquer un certificat",
+    "userPh": "utilisateur AD",
+    "button": "Tout révoquer de l'utilisateur",
+    "ok": "Révoqués : {n}",
+    "list": "Voir les révoqués",
+    "empty": "Rien de révoqué."
+  },
+  "cols": { "user": "Utilisateur", "id": "ID", "status": "Statut" },
+  "user": {
+    "step1": "Votre utilisateur",
+    "userPh": "utilisateur",
+    "next": "Suivant",
+    "step2": "Code de l'application (6 chiffres)",
+    "help": "Ouvrez le QR reçu dans l'authentificateur et saisissez le code actuel.",
+    "codePh": "000000",
+    "verify": "Valider et télécharger",
+    "checking": "Vérification...",
+    "codeInvalid": "Code invalide ou expiré.",
+    "noPending": "MFA ok, mais aucun certificat en attente.",
+    "downloading": "OK ! Téléchargement du certificat..."
+  }
+}

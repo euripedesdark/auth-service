@@ -38,6 +38,7 @@ public class AdProvider implements AuthProvider, AuthenticationProvider {
             return identityResolver.resolve(request.username(),NAME,groupResolver);
         }catch(BadCredentialsException e){throw e;}
         catch(org.springframework.ldap.AuthenticationException e){throw new BadCredentialsException("Invalid credentials",e);}
+        catch(org.springframework.dao.IncorrectResultSizeDataAccessException e){throw new BadCredentialsException("Invalid credentials",e);}
         catch(DataAccessResourceFailureException e){throw new ProviderUnavailableException(NAME,e);}
         catch(RuntimeException e){throw new ProviderUnavailableException(NAME,e);}
     }
