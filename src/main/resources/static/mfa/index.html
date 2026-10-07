@@ -1,59 +1,14 @@
 <!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Baixar certificado — MFA</title>
-<style>
-body{font-family:sans-serif;max-width:520px;margin:2em auto;padding:0 1em}
-section{border:1px solid #ccc;border-radius:8px;padding:1em;margin:1em 0}
-input,button{padding:.5em;margin:.25em 0;font-size:1.1em}input{width:95%}
-.hidden{display:none}
-</style>
-</head>
-<body>
-<h1>Baixar seu certificado</h1>
-
-<section id="s1">
-<h2>1. Seu usuário</h2>
-<input id="u" placeholder="nome do usuário">
-<button onclick="ir()">Avançar</button>
-</section>
-
-<section id="s2" class="hidden">
-<h2>2. Código do aplicativo (6 dígitos)</h2>
-<p>Abra o QR que você recebeu no autenticador e digite o código atual.</p>
-<input id="c" inputmode="numeric" maxlength="6" placeholder="000000">
-<button onclick="verificar()">Validar e baixar</button>
-<div id="msg"></div>
-</section>
-
-<script>
-const BASE=((location.pathname==='/auth'||location.pathname.startsWith('/auth/'))?'/auth':'');
-let USER="";
-function ir(){
-  USER=document.getElementById('u').value.trim();
-  if(!USER)return;
-  document.getElementById('s1').classList.add('hidden');
-  document.getElementById('s2').classList.remove('hidden');
-}
-async function verificar(){
-  const code=document.getElementById('c').value.trim();
-  const m=document.getElementById('msg');
-  m.textContent="Validando...";
-  let r=await fetch(BASE+'/api/v1/mfa/verify',{method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({username:USER,code:code})});
-  if(!r.ok){m.textContent="Código inválido ou expirado.";return;}
-  const v=await r.json();
-  r=await fetch(BASE+'/api/v1/certificates/download-token',{method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({username:USER,mfaId:v.mfaId})});
-  if(!r.ok){m.textContent="MFA ok, mas sem certificado pendente.";return;}
-  const t=await r.json();
-  m.textContent="OK! Baixando certificado...";
-  window.location=BASE+'/api/v1/certificates/download?token='+encodeURIComponent(t.downloadToken);
-}
-</script>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>auth-frontend</title>
+    <script type="module" crossorigin src="./assets/index-CoRmOEfj.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DaEP2Vx7.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>
