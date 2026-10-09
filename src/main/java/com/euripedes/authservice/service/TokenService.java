@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
+import java.util.Objects;
 
 @Service
 public class TokenService {
@@ -17,10 +18,18 @@ public class TokenService {
     private final TokenProperties properties;
     public TokenService(JwtEncoder encoder,TokenProperties properties){this.encoder=encoder;this.properties=properties;}
     public TokenResponseDto issue(IdentityDto identity){
+        Objects.requireNonNull(identity, "identity");
+        if (identity.provider() == null || identity.provider().isBlank()
+                || identity.identityId() == null || identity.identityId().isBlank()
+                || identity.username() == null || identity.username().isBlank()
+                || identity.groups() == null) {
+            throw new IllegalArgumentException("Canonical identity requires provider, identityId, username and groups");
+        }
         Instant now=Instant.now();
         Instant exp=now.plusSeconds(properties.getTtlSeconds());
         JwtClaimsSet claims=JwtClaimsSet.builder().issuer(properties.getIssuer()).issuedAt(now).expiresAt(exp)
-              .subject(identity.identityId()).claim("username",identity.username()).claim("provider",identity.provider())
+              .subject(identity.identityId()).claim("identityId",identity.identityId())
+              .claim("username",identity.username()).claim("provider",identity.provider())
               .claim("groups",identity.groups()).build();
 
         // O header precisa declarar HS256 explicitamente.
