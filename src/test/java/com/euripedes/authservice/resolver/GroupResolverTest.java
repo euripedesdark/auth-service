@@ -20,4 +20,14 @@ class GroupResolverTest {
         BasicAttributes attributes=new BasicAttributes(true);
         assertEquals(java.util.List.of(),new GroupResolver().resolve(new DirContextAdapter(),attributes));
     }
+    @Test void grupoPrimarioDomainUsersNaoDependeDeMemberOf(){
+        BasicAttributes attributes=new BasicAttributes(true);
+        attributes.put("primaryGroupID", "513");
+        assertEquals(java.util.List.of("Domain Users"),new GroupResolver().resolve(new DirContextAdapter(),attributes));
+    }
+    @Test void outroGrupoPrimarioNaoViraDomainUsers(){
+        BasicAttributes attributes=new BasicAttributes(true);
+        attributes.put("primaryGroupID", "514");
+        assertEquals(java.util.List.of(),new GroupResolver().resolve(new DirContextAdapter(),attributes));
+    }
 }

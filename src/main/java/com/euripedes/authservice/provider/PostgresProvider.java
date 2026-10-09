@@ -14,6 +14,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -63,9 +65,10 @@ public class PostgresProvider implements AuthProvider {
             throw new ProviderUnavailableException(NAME);
 
         // 1) senha conferida pelo Postgres, como role.
-        if(validarNoPostgres(username,request.password())){
+        Optional<Boolean> superuser = validarNoPostgres(username, request.password());
+        if(superuser.isPresent()){
             log.info("Login autenticado pelo Postgres (role): username='{}', provider='{}'",username,NAME);
-            return identidade(username);
+            return identidade(username, superuser.get());
         }
 
         // 2) nao e role: a senha bate no hash guardado pela aplicacao?
@@ -94,20 +97,27 @@ public class PostgresProvider implements AuthProvider {
      * pessoa. O Postgres confere a senha ao aceitar: senha errada ou role
      * inexistente resultam em SQLException.
      */
-    private boolean validarNoPostgres(String username,String password){
+    private Optional<Boolean> validarNoPostgres(String username,String password){
         Properties info = new Properties();
         info.setProperty("user",username);
         info.setProperty("password",password);
         info.setProperty("connectTimeout",String.valueOf(properties.getConnectTimeoutSeconds()));
         try(Connection c=DriverManager.getConnection(properties.credentialUrl(),info)){
-            return c.isValid(3);
+            if (!c.isValid(3)) return Optional.empty();
+            try (PreparedStatement ps = c.prepareStatement(
+                    "SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname = current_user")) {
+                ps.setQueryTimeout(properties.getQueryTimeoutSeconds());
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next() ? Optional.of(rs.getBoolean("rolsuper")) : Optional.empty();
+                }
+            }
         }catch(SQLException e){
             // SQLException aqui e' senha errada, role inexistente ou role que
             // so aceita certificado. Nos tres casos a resposta e a mesma: nao
             // autenticado. E o comportamento certo: role de servico (sa) nao
             // deve conseguir entrar pela tela de login.
             log.debug("Postgres recusou as credenciais de '{}': {}",username,primeiraLinha(e));
-            return false;
+            return Optional.empty();
         }catch(RuntimeException e){
             throw new ProviderUnavailableException(NAME,e);
         }
@@ -165,9 +175,16 @@ public class PostgresProvider implements AuthProvider {
     }
 
     private IdentityDto identidade(String username){
+        return identidade(username, false);
+    }
+
+    private IdentityDto identidade(String username, boolean superuser){
         String group = properties.getAccessGroup();
-        List<String> groups = (group==null||group.isBlank())?List.of():List.of(group);
-        return new IdentityDto(username,username,NAME,groups);
+        List<String> groups = new ArrayList<>();
+        if (group != null && !group.isBlank()) groups.add(group);
+        // O privilegio vem da role autenticada, nunca do nome informado ou do hash ERP.
+        if (superuser) groups.add("POSTGRES_SUPERUSER");
+        return new IdentityDto(username,username,NAME,List.copyOf(groups));
     }
 
     private static String primeiraLinha(SQLException e){
