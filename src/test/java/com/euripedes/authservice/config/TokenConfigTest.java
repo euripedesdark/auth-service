@@ -50,7 +50,7 @@ class TokenConfigTest {
     private TokenService service(){
         TokenConfig config = new TokenConfig();
         SecretKey chave = config.jwtSecretKey(props());
-        return new TokenService(config.jwtEncoder(chave), props());
+        return new TokenService(new ApiTokenEncoder(chave), props());
     }
 
     @Test void emiteTokenQueVoltaAssinadoEmHS256(){
@@ -121,7 +121,7 @@ class TokenConfigTest {
         TokenProperties emitente = props();
         emitente.setIssuer("outro-servico");
         TokenResponseDto emitido = new TokenService(
-                config.jwtEncoder(config.jwtSecretKey(emitente)), emitente)
+                new ApiTokenEncoder(config.jwtSecretKey(emitente)), emitente)
                 .issue(new IdentityDto("sa","sa","POSTGRES",List.of("BRASIL_SAAS_TODOS")));
 
         JwtDecoder decoder = config.jwtDecoder(config.jwtSecretKey(props()),props());

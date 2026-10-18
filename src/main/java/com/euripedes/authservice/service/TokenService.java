@@ -1,12 +1,11 @@
 package com.euripedes.authservice.service;
 
+import com.euripedes.authservice.config.ApiTokenEncoder;
 import com.euripedes.authservice.config.TokenProperties;
 import com.euripedes.authservice.contract.IdentityDto;
 import com.euripedes.authservice.contract.TokenResponseDto;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
@@ -14,9 +13,15 @@ import java.util.Objects;
 
 @Service
 public class TokenService {
-    private final JwtEncoder encoder;
+    private final ApiTokenEncoder encoder;
     private final TokenProperties properties;
-    public TokenService(JwtEncoder encoder,TokenProperties properties){this.encoder=encoder;this.properties=properties;}
+
+    /**
+     * @param encoder encoder HMAC do token interno. Vem montado pelo TokenConfig
+     *                como ApiTokenEncoder, e nao como JwtEncoder do contexto,
+     *                para nao colidir com o encoder do authorization server.
+     */
+    public TokenService(ApiTokenEncoder encoder,TokenProperties properties){this.encoder=encoder;this.properties=properties;}
     public TokenResponseDto issue(IdentityDto identity){
         Objects.requireNonNull(identity, "identity");
         if (identity.provider() == null || identity.provider().isBlank()
@@ -41,7 +46,7 @@ public class TokenService {
         // 401 para todos os provedores.
         JwsHeader header=JwsHeader.with(MacAlgorithm.HS256).build();
 
-        String token=encoder.encode(JwtEncoderParameters.from(header,claims)).getTokenValue();
+        String token=encoder.encode(header,claims);
         return new TokenResponseDto(token,"Bearer",properties.getTtlSeconds(),identity);
     }
 }

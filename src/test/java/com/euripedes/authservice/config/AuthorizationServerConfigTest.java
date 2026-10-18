@@ -55,14 +55,17 @@ class AuthorizationServerConfigTest {
     }
 
     @Test
-    void segredoVazioNaoEhAceitoComoSenhaValida() {
+    void segredoVazioNaoAutenticaNinguem() {
         OAuth2ServerProperties properties = properties();
         properties.setClientSecret("");
 
         RegisteredClient grafana = new AuthorizationServerConfig()
                 .registeredClientRepository(properties).findByClientId("grafana");
 
-        assertThat(grafana.getClientSecret()).startsWith("{");
+        // Sem segredo definido o cliente fica sem credencial: o Grafana nao
+        // autentica e o authorization server recusa a troca de code. Melhor
+        // do que aceitar qualquer senha.
+        assertThat(grafana.getClientSecret()).isEmpty();
     }
 
     @Test

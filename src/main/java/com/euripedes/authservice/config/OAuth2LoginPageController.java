@@ -3,6 +3,7 @@ package com.euripedes.authservice.config;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,6 +27,10 @@ public class OAuth2LoginPageController {
     @GetMapping(value = LOGIN_PATH, produces = MediaType.TEXT_HTML_VALUE)
     public String loginPage(HttpServletRequest request) {
         boolean erro = request.getParameter("error") != null;
+        // O CSRF esta ligado nesta cadeia: sem esse campo o POST volta 401.
+        CsrfToken csrf = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+        String csrfFields = csrf == null ? ""
+                : "<input type=\"hidden\" name=\"" + csrf.getParameterName() + "\" value=\"" + csrf.getToken() + "\">";
         return "<!doctype html>"
                 + "<html lang=\"pt-BR\"><head><meta charset=\"utf-8\">"
                 + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
@@ -47,6 +52,7 @@ public class OAuth2LoginPageController {
                 + "border:1px solid #6d3b41;color:#ff8f8f;font-size:13px}"
                 + "</style></head><body>"
                 + "<form method=\"post\" action=\"" + LOGIN_PATH + "\">"
+                + csrfFields
                 + "<h1>Brasil SaaS &middot; Autentica&ccedil;&atilde;o</h1>"
                 + "<p class=\"sub\">Use a mesma conta do sistema.</p>"
                 + (erro ? "<p class=\"erro\">Usu&aacute;rio ou senha inv&aacute;lidos.</p>" : "")

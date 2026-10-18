@@ -9,12 +9,15 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import com.euripedes.authservice.config.ApiTokenEncoder;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import static org.mockito.Mockito.*;
 
 class CanonicalIdentityTokenTest {
     @Test
     void rejectsIncompleteCanonicalIdentity() {
-        TokenService service = new TokenService(mock(JwtEncoder.class), mock(TokenProperties.class));
+        TokenService service = new TokenService(mock(ApiTokenEncoder.class), mock(TokenProperties.class));
         assertThrows(IllegalArgumentException.class,
             () -> service.issue(new IdentityDto(null, "euripedes", "AD", List.of())));
         assertThrows(IllegalArgumentException.class,
@@ -23,21 +26,19 @@ class CanonicalIdentityTokenTest {
 
     @Test
     void differentProvidersCannotShareCanonicalIdentityClaims() {
-        JwtEncoder encoder = mock(JwtEncoder.class);
+        ApiTokenEncoder encoder = mock(ApiTokenEncoder.class);
         TokenProperties props = mock(TokenProperties.class);
         when(props.getTtlSeconds()).thenReturn(300L);
         when(props.getIssuer()).thenReturn("test");
-        when(encoder.encode(any(JwtEncoderParameters.class))).thenAnswer(inv -> {
-            JwtEncoderParameters p = inv.getArgument(0);
-            assertEquals(p.getClaims().getSubject(), p.getClaims().getClaim("identityId"));
-            assertNotNull(p.getClaims().getClaim("provider"));
-            return new org.springframework.security.oauth2.jwt.Jwt(
-                "signed-token", java.time.Instant.now(), java.time.Instant.now().plusSeconds(300),
-                java.util.Map.of("alg", "HS256"), p.getClaims().getClaims());
+        when(encoder.encode(any(JwsHeader.class), any(JwtClaimsSet.class))).thenAnswer(inv -> {
+            JwtClaimsSet c = inv.getArgument(1);
+            assertEquals(c.getSubject(), c.getClaim("identityId"));
+            assertNotNull(c.getClaim("provider"));
+            return "signed-token";
         });
         TokenService service = new TokenService(encoder, props);
         service.issue(new IdentityDto("guid-ad", "euripedes", "AD", List.of()));
         service.issue(new IdentityDto("id-pg", "euripedes", "POSTGRES", List.of()));
-        verify(encoder, times(2)).encode(any(JwtEncoderParameters.class));
+        verify(encoder, times(2)).encode(any(JwsHeader.class), any(JwtClaimsSet.class));
     }
 }

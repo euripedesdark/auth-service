@@ -14,7 +14,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http,AdProvider adProvider,DomainBasicAuthProvider domainBasicAuthProvider)throws Exception{
+    SecurityFilterChain securityFilterChain(HttpSecurity http,AdProvider adProvider,DomainBasicAuthProvider domainBasicAuthProvider,TokenConfig tokenConfig,TokenProperties tokenProperties)throws Exception{
+        // O decoder HS256 do token interno e' passado a mao: como bean no
+        // contexto, o authorization server o usaria tambem e rejeitaria os
+        // tokens RSA do proprio issuer.
+        org.springframework.security.oauth2.jwt.JwtDecoder apiJwtDecoder=
+                tokenConfig.jwtDecoder(tokenConfig.jwtSecretKey(tokenProperties),tokenProperties);
         http.csrf(c->c.disable())
             .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .requestCache(c->c.disable()).formLogin(f->f.disable()).logout(l->l.disable())
@@ -32,7 +37,7 @@ public class SecurityConfig {
             .authenticationProvider(domainBasicAuthProvider)
             .authenticationProvider(adProvider)
             .httpBasic(Customizer.withDefaults())
-            .oauth2ResourceServer(o->o.jwt(Customizer.withDefaults()))
+            .oauth2ResourceServer(o->o.jwt(jwt->jwt.decoder(apiJwtDecoder)))
             .headers(h->h.contentTypeOptions(Customizer.withDefaults())
                 .frameOptions(f->f.deny())
                 .httpStrictTransportSecurity(Customizer.withDefaults()))

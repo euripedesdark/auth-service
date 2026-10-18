@@ -43,8 +43,21 @@ public class TokenConfig {
      *
      * O TokenService tambem precisa declarar HS256 no header -- o default do
      * Spring e' RS256, e uma chave HMAC nao satisfaz um matcher de RS256.
+     *
+     * <p><b>Nao e' bean de proposito.</b> O authorization server procura um
+     * {@code JwtEncoder} no contexto e usa o primeiro que achar. Se este
+     * encoder HMAC estivesse registrado, ele assinaria tambem os tokens do
+     * OAuth com um header RS256, o seletor nao acharia chave nenhuma e a
+     * troca de code por token devolveria 401 com "Failed to select a JWK
+     * signing key". Sem bean, o authorization server monta o encoder dele a
+     * partir do JWKSource RSA. O TokenService recebe a chave e monta o seu.
      */
-    @Bean JwtEncoder jwtEncoder(SecretKey key){
+    @Bean ApiTokenEncoder apiTokenEncoder(SecretKey key){
+        return new ApiTokenEncoder(key);
+    }
+
+    /** Atalho usado pelos testes. */
+    public JwtEncoder jwtEncoder(SecretKey key){
         OctetSequenceKey jwk=new OctetSequenceKey.Builder(key.getEncoded())
                 .algorithm(JWSAlgorithm.HS256)
                 .keyUse(KeyUse.SIGNATURE)
@@ -64,7 +77,13 @@ public class TokenConfig {
      *
      * O restante da validacao (exp, nbf) e' o do JwtValidators.createDefault.
      */
-    @Bean JwtDecoder jwtDecoder(SecretKey key,TokenProperties p){
+    /**
+     * Decoder do token interno. Fora do contexto pelo mesmo motivo do encoder:
+     * o authorization server procura um JwtDecoder no contexto para validar o
+     * Bearer do /userinfo. Com o decoder HS256 registrado, o token RSA do
+     * issuer era rejeitado e o /userinfo caia no login.
+     */
+    public JwtDecoder jwtDecoder(SecretKey key,TokenProperties p){
         NimbusJwtDecoder d=NimbusJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build();
 
         String esperado=p.getIssuer();
