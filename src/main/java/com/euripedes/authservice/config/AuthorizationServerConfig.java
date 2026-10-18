@@ -211,8 +211,28 @@ public class AuthorizationServerConfig {
                 context.getClaims().claim("groups",
                         identity.groups() == null ? List.of() : identity.groups());
                 context.getClaims().claim("provider", identity.provider());
+                context.getClaims().claim("grafana_role", grafanaRole(identity.groups()));
             }
         };
+    }
+
+    /**
+     * Papel do Grafana derivado dos grupos do AD.
+     *
+     * <p>Espelha a regra do ERP: quem e' superusuario, Domain Admin ou esta
+     * na Diretoria enxerga tudo e pode mexer no painel; o resto entra como
+     * Viewer e so ve o que o ERP mandou filtrar. O Grafana so aceita os
+     * nomes exatos das suas funcoes, entao o valor tem de sair assim.
+     */
+    static String grafanaRole(List<String> groups) {
+        if (groups == null) {
+            return "Viewer";
+        }
+        boolean podeEditar = groups.stream().anyMatch(g -> g != null && (
+                g.equalsIgnoreCase("GRP_SUPERUSER")
+                        || g.equalsIgnoreCase("GRP_DIRETORIA")
+                        || g.equalsIgnoreCase("Domain Admins")));
+        return podeEditar ? "Editor" : "Viewer";
     }
 
     /** Repassa as claims do id_token, grupos inclusive, no userinfo. */
@@ -231,6 +251,8 @@ public class AuthorizationServerConfig {
             }
             List<String> groups = user.getClaimAsStringList("groups");
             claims.put("groups", groups == null ? List.of() : groups);
+            String role = user.getClaimAsString("grafana_role");
+            claims.put("grafana_role", role == null ? "Viewer" : role);
             String provider = user.getClaimAsString("provider");
             if (provider != null) {
                 claims.put("provider", provider);

@@ -74,4 +74,21 @@ class AuthorizationServerConfigTest {
 
         assertThat(settings.getIssuer()).isEqualTo("http://192.168.2.10:8181");
     }
+
+    @Test
+    void diretoriaESuperuserPodemEditarOPainel() {
+        assertThat(AuthorizationServerConfig.grafanaRole(List.of("Domain Users", "GRP_DIRETORIA")))
+                .isEqualTo("Editor");
+        assertThat(AuthorizationServerConfig.grafanaRole(List.of("GRP_SUPERUSER")))
+                .isEqualTo("Editor");
+        assertThat(AuthorizationServerConfig.grafanaRole(List.of("Domain Admins")))
+                .isEqualTo("Editor");
+    }
+
+    @Test
+    void quemNaoEstaNaDiretoriaEntraComoViewer() {
+        assertThat(AuthorizationServerConfig.grafanaRole(List.of("Domain Users", "GRP_VENDEDOR")))
+                .isEqualTo("Viewer");
+        assertThat(AuthorizationServerConfig.grafanaRole(null)).isEqualTo("Viewer");
+    }
 }
