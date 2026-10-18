@@ -29,6 +29,18 @@ auth:
     access-group: ${AUTH_PG_ACCESS_GROUP:BRASIL_SAAS_TODOS}
     connect-timeout-seconds: ${AUTH_PG_CONNECT_TIMEOUT:5}
     query-timeout-seconds: ${AUTH_PG_QUERY_TIMEOUT:10}
+  oauth2:
+    # Provedor OAuth2/OIDC para o Grafana autenticar pelo mesmo AD do ERP.
+    # Desligado por padrao: sem enabled=true nenhuma rota OAuth e registrada.
+    enabled: ${AUTH_OAUTH2_ENABLED:false}
+    issuer: ${AUTH_OAUTH2_ISSUER:http://192.168.2.10:8181}
+    client-id: ${AUTH_OAUTH2_CLIENT_ID:grafana}
+    client-secret: ${AUTH_OAUTH2_CLIENT_SECRET:}
+    redirect-uris: ${AUTH_OAUTH2_REDIRECT_URIS:http://192.168.2.10:3000/grafana/login/generic_oauth}
+    jwk-directory: ${AUTH_OAUTH2_JWK_DIR:/opt/auth-service/oauth-jwks}
+    access-token-seconds: ${AUTH_OAUTH2_ACCESS_TOKEN_SECONDS:900}
+    email-domain: ${AUTH_OAUTH2_EMAIL_DOMAIN:srvcloud.cloud}
+    erp-origin: ${AUTH_OAUTH2_ERP_ORIGIN:http://192.168.2.10:8080}
   token:
     secret: ${AUTH_TOKEN_SECRET}
     issuer: ${AUTH_TOKEN_ISSUER:auth-service}
