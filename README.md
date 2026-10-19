@@ -1,11 +1,16 @@
-# BrasilCloud Auth Service
+#  Auth Service
 
-**Open Source Authentication Service** — autenticação centralizada e identidade (LDAP/AD) para ERP, firewall, proxy e outros serviços, com REST + JWT de curta duração.
+🇧🇷 **Open Source Authentication Service** — autenticação centralizada e identidade (LDAP/AD) para ERP, firewall, proxy e outros serviços, com REST + JWT de curta duração.
 
-Este projeto está sob **GNU AGPL v3**. Ver [LICENSE.md](LICENSE.md).
+🇺🇸**Open Source Authentication Service** — centralized authentication and identity (LDAP/AD) for ERP, firewall, proxy, and other services, using REST + short-lived JWT.
 
-Documentação completa em português: [README.pt-BR.md](README.pt-BR.md)
+🇧🇷 Este projeto está sob **GNU AGPL v3**. Ver [LICENSE.md](LICENSE.md).
 
+🇧🇷 Documentação completa em português: [README.pt-BR.md](README.pt-BR.md)
+
+🇺🇸 This project is under the **GNU AGPL v3**. See [LICENSE.md](LICENSE.md).
+
+🇺🇸 Complete documentation in Portuguese: [README.pt-BR.md](README.pt-BR.md)
 ---
 
 ## Escolha o seu idioma / Choose your language
