@@ -1,5 +1,6 @@
 package com.euripedes.authservice.api;
 
+import com.euripedes.authservice.config.SsoCookieUtil;
 import com.euripedes.authservice.contract.IdentityDto;
 import com.euripedes.authservice.contract.LoginRequestDto;
 import com.euripedes.authservice.contract.TokenResponseDto;
@@ -7,6 +8,7 @@ import com.euripedes.authservice.service.AuthenticationService;
 import com.euripedes.authservice.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -18,7 +20,13 @@ import org.springframework.web.bind.annotation.*;
 public class IdentityController {
     private final AuthenticationService service;
     private final TokenService tokenService;
-    public IdentityController(AuthenticationService service,TokenService tokenService){this.service=service;this.tokenService=tokenService;}
+    private final SsoCookieUtil ssoCookieUtil;
+
+    public IdentityController(AuthenticationService service, TokenService tokenService, SsoCookieUtil ssoCookieUtil) {
+        this.service = service;
+        this.tokenService = tokenService;
+        this.ssoCookieUtil = ssoCookieUtil;
+    }
 
     @GetMapping("/me") @Operation(summary="Return the authenticated identity")
     public IdentityDto me(Authentication a){return identityFrom(a);}
@@ -29,11 +37,14 @@ public class IdentityController {
     @GetMapping("/authenticated") @Operation(summary="Return the authenticated identity")
     public IdentityDto authenticated(Authentication a){return identityFrom(a);}
 
-    /** Backward-compatible login contract: validates AD credentials and returns the identity. */
     @PostMapping("/authenticate") @Operation(summary="Authenticate an identity against Active Directory")
-    public IdentityDto authenticate(@Valid @RequestBody LoginRequestDto request){return service.authenticate(request);}
+    public IdentityDto authenticate(@Valid @RequestBody LoginRequestDto request, jakarta.servlet.http.HttpServletResponse response){
+        IdentityDto identity = service.authenticate(request);
+        String token = tokenService.issue(identity).accessToken();
+        ssoCookieUtil.setToken(response, token);
+        return identity;
+    }
 
-    /** Preferred application-to-application flow: validates AD credentials once and returns a short-lived Bearer token. */
     @PostMapping("/token") @Operation(summary="Authenticate against Active Directory and issue a short-lived Bearer token")
     public TokenResponseDto token(@Valid @RequestBody LoginRequestDto request){
         return tokenService.issue(service.authenticate(request));

@@ -1,36 +1,61 @@
 package com.euripedes.authservice.config;
 
+import com.euripedes.authservice.contract.LoginRequestDto;
+import com.euripedes.authservice.service.AuthenticationService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
-/**
- * Tela de login do authorization server.
- *
- * <p>O Grafana autentica pelo fluxo OAuth2/OIDC deste servico, e o fluxo
- * comeca aqui: o navegador abre {@code /oauth2/authorize}, cai nesta
- * pagina, a pessoa entra com a conta do AD e volta para o Grafana.
- *
- * <p>E' um controller, e nao um template, porque o login acontece dentro do
- * iframe do painel, dentro do ERP. O HTML vem inline, sem CSS externo, para
- * o navegador nao pedir nenhum arquivo alem do proprio formulario.
- */
 @RestController
 @ConditionalOnProperty(prefix = "auth.oauth2", name = "enabled", havingValue = "true")
 public class OAuth2LoginPageController {
 
     static final String LOGIN_PATH = "/oauth2/login";
 
+    private final AuthenticationService authService;
+    private final SsoCookieUtil ssoCookieUtil;
+
+    public OAuth2LoginPageController(AuthenticationService authService, SsoCookieUtil ssoCookieUtil) {
+        this.authService = authService;
+        this.ssoCookieUtil = ssoCookieUtil;
+    }
+
     @GetMapping(value = LOGIN_PATH, produces = MediaType.TEXT_HTML_VALUE)
     public String loginPage(HttpServletRequest request) {
         boolean erro = request.getParameter("error") != null;
-        // O CSRF esta ligado nesta cadeia: sem esse campo o POST volta 401.
         CsrfToken csrf = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
         String csrfFields = csrf == null ? ""
                 : "<input type=\"hidden\" name=\"" + csrf.getParameterName() + "\" value=\"" + csrf.getToken() + "\">";
+
+        String continueUrl = request.getParameter("continue");
+        String continueField = continueUrl != null && !continueUrl.isBlank()
+                ? "<input type=\"hidden\" name=\"continue\" value=\"" + URLEncoder.encode(continueUrl, StandardCharsets.UTF_8) + "\">"
+                : "";
+
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie c : request.getCookies()) {
+                if ("sso_token".equals(c.getName())) {
+                    token = c.getValue();
+                    break;
+                }
+            }
+        }
+
+        String autoSubmit = "";
+        if (token != null && !token.isBlank()) {
+            autoSubmit = "<script>document.forms[0].submit();</script>";
+        }
+
         return "<!doctype html>"
                 + "<html lang=\"pt-BR\"><head><meta charset=\"utf-8\">"
                 + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
@@ -51,8 +76,10 @@ public class OAuth2LoginPageController {
                 + ".erro{margin:0 0 16px;padding:9px 10px;border-radius:3px;background:#3d1f22;"
                 + "border:1px solid #6d3b41;color:#ff8f8f;font-size:13px}"
                 + "</style></head><body>"
+                + autoSubmit
                 + "<form method=\"post\" action=\"" + LOGIN_PATH + "\">"
                 + csrfFields
+                + continueField
                 + "<h1>Brasil SaaS &middot; Autentica&ccedil;&atilde;o</h1>"
                 + "<p class=\"sub\">Use a mesma conta do sistema.</p>"
                 + (erro ? "<p class=\"erro\">Usu&aacute;rio ou senha inv&aacute;lidos.</p>" : "")
@@ -62,5 +89,31 @@ public class OAuth2LoginPageController {
                 + "<input id=\"password\" name=\"password\" type=\"password\" autocomplete=\"current-password\" required>"
                 + "<button type=\"submit\">Entrar</button>"
                 + "</form></body></html>";
+    }
+
+    @PostMapping(value = LOGIN_PATH)
+    public void loginSubmit(@RequestParam String username,
+                            @RequestParam String password,
+                            @RequestParam(required = false) String continueUrl,
+                            HttpServletRequest request,
+                            HttpServletResponse response) throws Exception {
+        try {
+            var identity = authService.authenticate(new com.euripedes.authservice.contract.LoginRequestDto(username, password, "AD"));
+            String token = new com.euripedes.authservice.service.TokenService(
+                    new com.euripedes.authservice.config.ApiTokenEncoder(
+                            new com.euripedes.authservice.config.TokenConfig().jwtSecretKey(
+                                    new com.euripedes.authservice.config.TokenProperties())),
+                    new com.euripedes.authservice.config.TokenProperties())
+                    .issue(identity).accessToken();
+            ssoCookieUtil.setToken(response, token);
+
+            if (continueUrl != null && !continueUrl.isBlank()) {
+                response.sendRedirect(continueUrl);
+            } else {
+                response.sendRedirect("/oauth2/authorize");
+            }
+        } catch (Exception e) {
+            response.sendRedirect(LOGIN_PATH + "?error=1");
+        }
     }
 }

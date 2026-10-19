@@ -126,7 +126,22 @@ public class AuthorizationServerConfig {
             // pelo Grafana, nao por um form, e exigirem token de CSRF ali
             // devolvia 401 em toda troca de code por token.
             .csrf(csrf -> csrf.ignoringRequestMatchers(machineEndpoints()))
-            .formLogin(form -> form.loginPage(LOGIN_PATH).permitAll())
+            .formLogin(form -> form
+                    .loginPage(LOGIN_PATH)
+                    .loginProcessingUrl(LOGIN_PATH)
+                    .permitAll()
+                    .successHandler((request, response, authentication) -> {
+                        String continueUrl = request.getParameter("continue");
+                        if (continueUrl != null && !continueUrl.isBlank()) {
+                            try {
+                                response.sendRedirect(continueUrl);
+                            } catch (Exception e) { /* ignore */ }
+                        } else {
+                            try {
+                                response.sendRedirect("/oauth2/authorize");
+                            } catch (Exception e) { /* ignore */ }
+                        }
+                    }))
             // O painel roda dentro de um iframe do ERP, em outra porta.
             // SameOrigin barraria e denyDefaultHeaders tiraria o formulario
             // de dentro do iframe; frame-ancestors limita ao ERP.
