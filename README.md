@@ -9,10 +9,12 @@
 🇧🇷 Documentação completa em português: [README.pt-BR.md](README.pt-BR.md)
 ---
 
+
 🇺🇸 This project is under the **GNU AGPL v3**. See [LICENSE.md](LICENSE.md).
 
 🇺🇸 Complete documentation in Engiish : [README.en-US.md](README.en-US.md) |
 ---
+
 
 ## Escolha o seu idioma / Choose your language
 
