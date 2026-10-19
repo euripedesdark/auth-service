@@ -1,14 +1,16 @@
 # Apoie o BrasilCloud Auth Service
+# Support the BrasilCloud Auth Service
 
-Este arquivo reúne os dados para doação do BrasilCloud Auth Service, um Auth Service Open Source mantido por um único desenvolvedor.
-
-Se este projeto ajudou você, sua empresa ou sua equipe, considere apoiar o desenvolvimento. Uma doação de qualquer valor paga servidor e certificados. Ela não compra garantia de prazo em nenhuma issue.
 
 - [English](#english) · [Español](#español) · [Français](#français)
 
 ---
 
 ## Português
+
+Este arquivo reúne os dados para doação do BrasilCloud Auth Service, um Auth Service Open Source mantido por um único desenvolvedor.
+
+Se este projeto ajudou você, sua empresa ou sua equipe, considere apoiar o desenvolvimento. Uma doação de qualquer valor paga servidor e certificados. Ela não compra garantia de prazo em nenhuma issue.
 
 ### PIX
 
@@ -35,6 +37,10 @@ O `Routing number` só é usado quando o dinheiro sai dos Estados Unidos. Fora d
 
 ## English
 
+This file contains information on how to donate to the BrasilCloud Auth Service—an open-source authentication service maintained by a single developer.
+
+If this project has been helpful to you, your company, or your team, please consider supporting its development. Any donation, regardless of the amount, helps cover server and certificate costs. Please note that donations do not guarantee a specific turnaround time for any issues.
+
 ### PIX
 
 ```
@@ -60,6 +66,10 @@ The routing number is only used when the money leaves the United States. Anywher
 
 ## Español
 
+Este archivo reúne los datos para realizar una donación a BrasilCloud Auth Service, un servicio de autenticación de código abierto (Open Source) mantenido por un único desarrollador.
+
+Si este proyecto te ha ayudado a ti, a tu empresa o a tu equipo, considera apoyar su desarrollo. Una donación de cualquier importe ayuda a cubrir los costes de servidores y certificados. No garantiza plazos de resolución para ninguna incidencia (issue).
+
 ### PIX
 
 ```
@@ -84,6 +94,10 @@ El routing number solo se usa cuando el dinero sale de Estados Unidos. En cualqu
 ---
 
 ## Français
+
+Ce fichier rassemble les informations nécessaires pour faire un don au BrasilCloud Auth Service, un service d'authentification open source maintenu par un développeur unique.
+
+Si ce projet vous a été utile, à vous, à votre entreprise ou à votre équipe, pensez à soutenir son développement. Un don, quel que soit son montant, permet de couvrir les frais de serveur et de certificats. Il ne donne cependant droit à aucune garantie de délai pour le traitement des tickets (issues).
 
 ### PIX
 
