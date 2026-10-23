@@ -1,12 +1,18 @@
 {
-  "app": { "adminTitle": "Admin — Certificates and MFA", "userTitle": "Download your certificate" },
+  "app": {
+    "adminTitle": "Admin — Certificates and MFA",
+    "userTitle": "Download your certificate"
+  },
   "login": {
     "title": "Login (domain user)",
-    "user": "Username", "userPh": "username (e.g.: administrator)",
-    "password": "Password", "domain": "Domain",
+    "user": "Username",
+    "userPh": "username (e.g.: administrator)",
+    "password": "Password",
+    "domain": "Domain",
     "domainPh": "empty = default (e.g.: other-domain.local)",
     "button": "Sign in",
-    "ok": "Signed in: {user}", "okDomain": "Signed in via {domain}: {user}",
+    "ok": "Signed in: {user}",
+    "okDomain": "Signed in via {domain}: {user}",
     "fail": "Login failed ({status})",
     "dnsOk": "Domain resolves to: {ips}",
     "dnsFail": "Domain does not resolve on this machine's DNS."
@@ -27,7 +33,11 @@
     "secret": "Secret:",
     "fail": "Error ({status})"
   },
-  "pending": { "title": "Pending downloads", "refresh": "Refresh", "empty": "Nothing pending." },
+  "pending": {
+    "title": "Pending downloads",
+    "refresh": "Refresh",
+    "empty": "Nothing pending."
+  },
   "revoke": {
     "title": "Revoke certificate",
     "userPh": "AD username",
@@ -36,7 +46,11 @@
     "list": "View revoked",
     "empty": "Nothing revoked."
   },
-  "cols": { "user": "User", "id": "ID", "status": "Status" },
+  "cols": {
+    "user": "User",
+    "id": "ID",
+    "status": "Status"
+  },
   "user": {
     "step1": "Your username",
     "userPh": "username",
@@ -49,5 +63,25 @@
     "codeInvalid": "Invalid or expired code.",
     "noPending": "MFA ok, but no pending certificate.",
     "downloading": "OK! Downloading certificate..."
+  },
+  "privileges": {
+    "title": "Linux Privilege Verification (Wheel / Samba AD & BIND)",
+    "auditBtn": "Audit Privileges",
+    "syncBtn": "Sync Wheel",
+    "sambaActive": "Samba AD DC: Active",
+    "sambaInactive": "Samba AD DC: Inactive",
+    "realm": "AD Realm:",
+    "wheelMembers": "Linux Wheel Group Members:",
+    "colUser": "AD User",
+    "colRoles": "AD Roles",
+    "colLinuxUser": "Linux User",
+    "colWheel": "Wheel Permission",
+    "colStatus": "Compliance Status",
+    "colActions": "Actions",
+    "compliant": "Compliant (Has Wheel)",
+    "missingWheel": "Missing Wheel Permission",
+    "linuxUserMissing": "User not created in Linux",
+    "syncSuccess": "User successfully synchronized to wheel group!",
+    "postgresNotice": "Security Notice: PostgreSQL superusers are strictly isolated from the host OS and have neither wheel group privileges nor Linux terminal access."
   }
 }

@@ -7,7 +7,9 @@ mod service;
 use config::AuthConfig;
 use controller::IdentityController;
 use server::AuthServer;
-use service::{ActiveDirectoryProvider, DefaultDomainResolver, JwtTokenService};
+use service::{
+    ActiveDirectoryProvider, DefaultDomainResolver, DefaultLinuxPrivilegeService, JwtTokenService,
+};
 use std::sync::Arc;
 use tracing::info;
 
@@ -36,10 +38,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let domain_resolver = Arc::new(DefaultDomainResolver::new());
 
+    let privilege_service = Arc::new(DefaultLinuxPrivilegeService::new(config.clone()));
+
     let controller = Arc::new(IdentityController::new(
         identity_provider,
         token_service,
         domain_resolver,
+        privilege_service,
     ));
 
     let server = AuthServer::new(config, controller);
