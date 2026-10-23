@@ -1,138 +1,70 @@
-# BrasilCloud Auth Service
+# Astral Auth Service
 
-**Servicio central de autenticación e identidad** — valida usuarios contra Active Directory (AD/LDAP) y devuelve identidad + grupos a ERP, firewall, proxy y otros servicios. Contrato **REST + HTTP Basic**, con **Bearer JWT de corta duración** para integraciones modernas. No es servidor OAuth2/OIDC.
+**Servicio Central de Identidad, Autenticación y Gestión de Privilegios Linux** — Desarrollado en **Rust (Axum / Tokio)** con arquitectura orientada a objetos, integrado de forma nativa con Samba 4 Active Directory DC mediante LDAPS, emisor de tokens JWT de corta duración y gestor centralizado de privilegios del sistema operativo (`wheel`/`sudo`) para la plataforma Astral.
 
-## Acerca de
+---
 
-Punto único de autenticación del ecosistema BrasilCloud (usado por Brasil SaaS ERP). Autentica en el AD por LDAPS. Los grupos del AD son datos de identidad: **la autorización pertenece a cada sistema consumidor**.
+## 🌟 Características Principales
 
-## Stack
+1. **Autenticación Centralizada Corporativa**:
+   - Conexión segura mediante LDAPS (`ldaps://127.0.0.1:636`) con TLS.
+   - Búsqueda LDAP de usuarios, grupos (`memberOf`) y validación de contraseñas con enlace (bind) de usuario.
+   - Emisión de tokens JWT firmados con HMAC-SHA256 que contienen `identityId`, `username`, `provider`, `groups`, `isAdmin` y `hasWheel`.
+
+2. **Servicio de Verificación y Sincronización de Privilegios Linux (`wheel`)**:
+   - **Auditoría de Samba Active Directory**: Descubre dinámicamente cuentas de administradores (`Administrator`, miembros de `Domain Admins`, `Administrators` y `Enterprise Admins`).
+   - **Verificación en el Host Linux**: Inspecciona `/etc/group`, `/etc/passwd` y NSS (`getent group wheel`, `id -nG`) para verificar si los administradores de AD tienen permisos en el grupo `wheel` de Linux.
+   - **Sincronización Automatizada**: Permite añadir administradores corporativos al grupo `wheel` (`usermod -aG wheel`) o crearlos localmente (`useradd -M -s /bin/bash -G wheel`), garantizando el cumplimiento operativo.
+   - **Integración con el Módulo BIND AD-DNS**: Valida usuarios originados por consultas y enlaces LDAP del módulo `astral-ad-dns`, aplicando las mismas reglas de verificación y cumplimiento.
+
+3. **Política Estricta de Aislamiento PostgreSQL**:
+   - Los superusuarios de la base de datos PostgreSQL (`rolsuper = true`) están estrictamente restringidos a la capa de datos.
+   - Bloqueo intransigente contra la asignación de privilegios `wheel` o acceso al terminal Linux para usuarios de bases de datos (`HTTP 403 Forbidden`).
+
+---
+
+## 🛠️ Stack Tecnológico
 
 | Capa | Tecnología |
 |---|---|
-| Lenguaje | Java 21 |
-| Framework | Spring Boot 3.3.5 (Web, Security, Actuator) |
-| Directorio | Spring LDAP |
-| Tokens | JWT corto (oauth2-jose) |
-| Docs API | springdoc-openapi (Swagger UI) |
-| Build | Maven |
-| Puerto | `8181` |
+| Lenguaje | Rust 2021 (v1.99+) |
+| Framework Web | Axum 0.8 / Tokio Async Runtime |
+| Directorio LDAP | `ldap3` (LDAPS seguro) |
+| Criptografía / Tokens | `jsonwebtoken` 11.1 / `chrono` |
+| Integración SO | `/etc/group`, `/etc/passwd`, `getent`, `usermod`, `useradd` |
+| Panel Web Admin | React 19 / PrimeReact / Vite (i18n: pt-BR, en-US, es-ES, fr-FR) |
+| Puerto del Servicio | `8181` (Nginx TLS inverso en puerto `8443`) |
 
-## Ejecutar
+---
+
+## 🚀 Endpoints de la API REST
+
+### Autenticación y Sesión
+- `POST /api/v1/identity/authenticate`: Autentica credenciales y establece cookies de sesión SSO.
+- `POST /api/v1/identity/token`: Autentica y devuelve token Bearer JWT con objeto `Identity`.
+- `GET /api/v1/identity/me`: Extrae y valida el token Bearer devolviendo las claims.
+- `POST /api/v1/identity/logout`: Invalida las cookies de sesión.
+- `GET /health` y `/actuator/health`: Chequeo de estado del servicio y de Samba AD.
+
+### Gestión de Privilegios Linux (Wheel / Samba AD & BIND)
+- `GET /api/v1/privileges/status`: Devuelve el informe completo de auditoría de Samba AD, miembros de `wheel` y estado de cumplimiento.
+- `GET /api/v1/privileges/verify?username={user}&provider={prov}`: Verifica puntualmente si un usuario tiene permiso `wheel` en Linux.
+- `POST /api/v1/privileges/verify-bind`: Valida usuarios originarios del módulo `astral-ad-dns` mediante bind LDAP.
+- `POST /api/v1/privileges/sync-wheel`: Sincroniza al usuario administrador de AD en el grupo `wheel` del host Linux.
+
+---
+
+## 🔒 Ejemplos de Auditoría y Sincronización vía cURL
 
 ```bash
-export AUTH_LDAP_URL='ldaps://100.100.100.100:636'
-export AUTH_LDAP_BASE='DC=homelab,DC=local'
-export AUTH_LDAP_USER_DN='CN=svc-auth,OU=Service Accounts,DC=homelab,DC=local'
-export AUTH_LDAP_PASSWORD='CLAVE_CUENTA_SERVICIO'
-export AUTH_LDAP_USER_SEARCH_BASE='OU=Usuarios,DC=homelab,DC=local'
+# Verificar informe de auditoría
+curl -s http://127.0.0.1:8181/api/v1/privileges/status | jq .
 
-mvn clean package
-java -jar target/auth-service-1.0.0-SNAPSHOT.jar
+# Verificar permiso de un usuario específico
+curl -s "http://127.0.0.1:8181/api/v1/privileges/verify?username=Administrator" | jq .
+
+# Sincronizar administrador de AD en el grupo wheel de Linux
+curl -s -X POST http://127.0.0.1:8181/api/v1/privileges/sync-wheel \
+  -H "Content-Type: application/json" \
+  -d '{"username":"Administrator","createLinuxUserIfMissing":true}' | jq .
 ```
-
-Desarrollo: `mvn spring-boot:run`. Puerto: `SERVER_PORT=8181`. En producción detrás de HTTPS/reverse proxy.
-
-## Configuración
-
-| Variable | Defecto | Finalidad |
-|---|---|---|
-| `AUTH_LDAP_URL` | — | Endpoint LDAP seguro |
-| `AUTH_LDAP_BASE` | — | Base LDAP |
-| `AUTH_LDAP_USER_DN` | — | Cuenta de servicio (no-admin) |
-| `AUTH_LDAP_PASSWORD` | — | Clave (**fuera de Git**) |
-| `AUTH_LDAP_USER_SEARCH_BASE` | — | Base de usuarios |
-| `AUTH_LDAP_REQUIRE_SECURE` | `true` | Exige `ldaps://` |
-| `AUTH_TOKEN_SECRET` | — | Clave JWT (32+ bytes, fuera de Git) |
-| `AUTH_TOKEN_TTL_SECONDS` | `900` | Vida del JWT |
-| `SERVER_PORT` | `8181` | Puerto HTTP |
-
-## Endpoints
-
-| Método | Ruta | Uso |
-|---|---|---|
-| `POST` | `/api/v1/identity/authenticate` | Login |
-| `POST` | `/api/v1/identity/token` | Login con Bearer JWT |
-| `GET` | `/api/v1/identity/me` | Identidad |
-| `GET` | `/api/v1/identity/groups` | Grupos |
-| `GET` | `/actuator/health` | Salud (público) |
-| `GET` | `/swagger-ui.html` | Docs interactiva |
-
-`401` = credencial inválida, `503` = AD/servicio no disponible (nunca trate 503 como clave errada). No registre claves AD ni JWT en logs.
-
-## Guías de Implantación e Integración
-
-| Idioma | Guía |
-|---|---|
-| PT-BR | docs/GUIA-INTEGRACAO-AUTH-SERVICE.pt-BR.md |
-| EN-US | docs/GUIA-INTEGRACAO-AUTH-SERVICE.en-US.md |
-| ES-ES | docs/GUIA-INTEGRACAO-AUTH-SERVICE.es-ES.md |
-| FR-FR | docs/GUIA-INTEGRACAO-AUTH-SERVICE.fr-FR.md |
-
-## Requisitos: LDAP / LDAPS / Active Directory
-
-- **Linux:** Samba Active Directory — guía completa:
-  https://medium.com/meetcyber/full-guide-deploying-samba-active-directory-on-fedora-and-rocky-with-hybrid-dns-and-gpo-support-30f47fab1e90
-- **Windows:** Windows Server Active Directory con LDAPS habilitado.
-
-Puede evaluarse sin el entorno corporativo completo; en producción úselo integrado a un directorio LDAP/LDAPS, con cuenta de servicio sin privilegios.
-
-## Apoya el Proyecto
-
-BrasilCloud Auth Service es open source mantenido por un solo desarrollador. Si le ayudó a usted, su empresa o su equipo, considere apoyarlo.
-
-**PIX (solo Brasil):**
-
-```
-24adc62c-b073-4587-974d-03fe35f6733f
-```
-
-Cualquier valor paga servidores y certificados. No compra SLA en ningún issue.
-
-### Transferencia internacional
-
-PIX no funciona fuera de Brasil. **Desde un banco de EE. UU.**, transferencia doméstica. **Desde otro lugar**, Swift internacional.
-
-| | |
-|---|---|
-| **Nombre** | Euripedes Batista de Paiva Junior |
-| **Tipo de cuenta** | Checking |
-| **Routing number** (wire y ACH) | `101019628` |
-| **Número de cuenta** | `215822927677` |
-| **Banco** | Wise US Inc, 108 W 13th St, Wilmington, DE, 19801, United States |
-| **SWIFT/BIC** | `TRWIUS35XXX` |
-
-## Soporte
-
-- Email: euripedesdark@gmail.com
-- GitHub Issues: https://github.com/euripedesdark/auth-service/issues
-- Docs: `docs/`
-
-## Cómo Contribuir
-
-1. Abra un issue antes de escribir código.
-2. Cree una rama descriptiva.
-3. Commit por tema y ejecute pruebas (`mvn test`).
-4. Abra el Pull Request contra `main`.
-
-## Licencia
-
-Este proyecto está bajo **GNU AGPL v3**. Ver `LICENSE.es-ES.md` (nota en español; texto oficial en inglés en `LICENSE.md`).
-
-(c) Euripedes Batista de Paiva Junior
-
-## 🔐 Política Unificada de Acceso y Autenticación del Ecosistema Astral
-
-El **Astral Auth Service** es el núcleo emisor de identidad y orquestador de confianza para la plataforma Astral:
-
-### 1. Rol Central como Proveedor de Identidad (IdP)
-- **Validación contra Active Directory / LDAP**: Autentica credenciales corporativas directamente contra Samba 4 AD mediante LDAPS (puerto 636), mapeando grupos de seguridad (`Domain Admins`, etc.).
-- **Integración con PostgreSQL**: Validación de credenciales de superusuario de base de datos (`rolsuper = true`).
-- **Emisión y Firma de Tokens JWT**: Genera tokens Bearer firmados con el secreto compartido (`AUTH_TOKEN_SECRET` en `/etc/auth-service/auth.env`) y cookies de sesión (`sso_token`, `astral_token`).
-
-### 2. Excepción Arquitectónica de la Interfaz Web IAM
-- **Acceso Administrativo Autónomo**: La interfaz web IAM de `auth-service` conserva credenciales administrativas independientes/directas.
-- **Justificación Arquitectónica**: `auth-service` regula la conexión con AD y genera certificados TLS de la plataforma. Si su interfaz dependiera exclusivamente de AD, cualquier provisionamiento inicial o contingencia del directorio bloquearía la consola encargada de repararlo.
-
-### 3. Consumo por los Demás Módulos Astral
-- Los módulos consumidores aceptan sesiones emitidas por este servicio o mediante las 4 vías estandarizadas (Samba AD, Linux Sudo, PostgreSQL Superuser o SSO).

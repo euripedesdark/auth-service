@@ -1,12 +1,18 @@
 {
-  "app": { "adminTitle": "Admin — Certificats et MFA", "userTitle": "Télécharger votre certificat" },
+  "app": {
+    "adminTitle": "Admin — Certificats et MFA",
+    "userTitle": "Télécharger votre certificat"
+  },
   "login": {
     "title": "Connexion (utilisateur du domaine)",
-    "user": "Utilisateur", "userPh": "utilisateur (ex. : administrator)",
-    "password": "Mot de passe", "domain": "Domaine",
+    "user": "Utilisateur",
+    "userPh": "utilisateur (ex. : administrator)",
+    "password": "Mot de passe",
+    "domain": "Domaine",
     "domainPh": "vide = défaut (ex. : autre-domaine.local)",
     "button": "Se connecter",
-    "ok": "Connecté : {user}", "okDomain": "Connecté via {domain} : {user}",
+    "ok": "Connecté : {user}",
+    "okDomain": "Connecté via {domain} : {user}",
     "fail": "Échec de connexion ({status})",
     "dnsOk": "Le domaine résout vers : {ips}",
     "dnsFail": "Le domaine ne résout pas sur le DNS de la machine."
@@ -27,7 +33,11 @@
     "secret": "Secret :",
     "fail": "Erreur ({status})"
   },
-  "pending": { "title": "Téléchargements en attente", "refresh": "Actualiser", "empty": "Rien en attente." },
+  "pending": {
+    "title": "Téléchargements en attente",
+    "refresh": "Actualiser",
+    "empty": "Rien en attente."
+  },
   "revoke": {
     "title": "Révoquer un certificat",
     "userPh": "utilisateur AD",
@@ -36,7 +46,11 @@
     "list": "Voir les révoqués",
     "empty": "Rien de révoqué."
   },
-  "cols": { "user": "Utilisateur", "id": "ID", "status": "Statut" },
+  "cols": {
+    "user": "Utilisateur",
+    "id": "ID",
+    "status": "Statut"
+  },
   "user": {
     "step1": "Votre utilisateur",
     "userPh": "utilisateur",
@@ -49,5 +63,25 @@
     "codeInvalid": "Code invalide ou expiré.",
     "noPending": "MFA ok, mais aucun certificat en attente.",
     "downloading": "OK ! Téléchargement du certificat..."
+  },
+  "privileges": {
+    "title": "Vérification des Privilèges Linux (Wheel / Samba AD & BIND)",
+    "auditBtn": "Auditer les Privilèges",
+    "syncBtn": "Synchroniser Wheel",
+    "sambaActive": "Samba AD DC : Actif",
+    "sambaInactive": "Samba AD DC : Inactif",
+    "realm": "Domaine AD :",
+    "wheelMembers": "Membres du Groupe Wheel (Linux) :",
+    "colUser": "Utilisateur AD",
+    "colRoles": "Rôles AD",
+    "colLinuxUser": "Utilisateur Linux",
+    "colWheel": "Permission Wheel",
+    "colStatus": "Statut de Conformité",
+    "colActions": "Actions",
+    "compliant": "Conforme (Possède Wheel)",
+    "missingWheel": "Sans Permission Wheel",
+    "linuxUserMissing": "Utilisateur non créé dans Linux",
+    "syncSuccess": "Utilisateur synchronisé avec succès dans le groupe wheel !",
+    "postgresNotice": "Avis de Sécurité : Les superutilisateurs PostgreSQL sont strictement isolés du système hôte et ne disposent ni des privilèges du groupe wheel ni d'accès au terminal Linux."
   }
 }

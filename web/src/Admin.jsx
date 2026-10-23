@@ -27,6 +27,10 @@ export default function Admin() {
   const [rUser, setRUser] = useState('');
   const [revoked, setRevoked] = useState(null);
 
+  // Estados da Auditoria e Sincronização de Privilégios Linux (Wheel / Samba AD & BIND)
+  const [privReport, setPrivReport] = useState(null);
+  const [auditLoading, setAuditLoading] = useState(false);
+
   async function login() {
     setDns('');
     if (dom.trim()) {
@@ -44,11 +48,43 @@ export default function Admin() {
       setLogged(t('login.ok', { user: r.data.username }));
     }
     loadPending();
+    loadPrivileges();
   }
 
   async function loadPending() {
     const r = await api('/api/v1/certificates/pending');
     if (r.ok) setPending(r.data);
+  }
+
+  async function loadPrivileges() {
+    setAuditLoading(true);
+    try {
+      const r = await api('/api/v1/privileges/status');
+      if (r.ok && r.data) {
+        setPrivReport(r.data);
+      }
+    } catch (e) {
+      console.error("Falha ao carregar relatório de privilégios:", e);
+    } finally {
+      setAuditLoading(false);
+    }
+  }
+
+  async function syncWheel(username) {
+    try {
+      const r = await api('/api/v1/privileges/sync-wheel', {
+        method: 'POST',
+        body: { username, createLinuxUserIfMissing: true },
+      });
+      if (r.ok && r.data && r.data.success) {
+        toast.current.show({ severity: 'success', summary: t('privileges.syncSuccess'), detail: r.data.message });
+        loadPrivileges();
+      } else {
+        toast.current.show({ severity: 'error', summary: 'Falha na sincronização', detail: r.data?.error || 'Erro desconhecido' });
+      }
+    } catch (e) {
+      toast.current.show({ severity: 'error', summary: 'Erro de comunicação', detail: String(e) });
+    }
   }
 
   async function emitir() {
@@ -79,7 +115,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="p-3" style={{ maxWidth: 760, margin: '0 auto' }}>
+    <div className="p-3" style={{ maxWidth: 860, margin: '0 auto' }}>
       <Toast ref={toast} />
       <h1>{t('app.adminTitle')}</h1>
 
@@ -98,6 +134,74 @@ export default function Admin() {
       </Card>
 
       {logged && (<>
+        <Card title={t('privileges.title')} className="mb-3">
+          <div className="flex flex-column gap-3">
+            <div className="flex gap-2 align-items-center flex-wrap">
+              <Button
+                label={t('privileges.auditBtn')}
+                icon="pi pi-shield"
+                onClick={loadPrivileges}
+                loading={auditLoading}
+              />
+              {privReport && privReport.sambaStatus && (
+                <Message
+                  severity={privReport.sambaStatus.isActive ? "success" : "warn"}
+                  text={`${privReport.sambaStatus.isActive ? t('privileges.sambaActive') : t('privileges.sambaInactive')} | ${t('privileges.realm')} ${privReport.sambaStatus.realm}`}
+                />
+              )}
+            </div>
+
+            {privReport && (
+              <>
+                <div className="p-2 border-1 surface-border border-round surface-50">
+                  <b>{t('privileges.wheelMembers')}</b>{" "}
+                  <code>{privReport.linuxWheelMembers ? privReport.linuxWheelMembers.join(', ') : 'nenhum'}</code>
+                </div>
+
+                <DataTable value={privReport.adminUsers || []} emptyMessage="Nenhum administrador AD localizado" paginator rows={5}>
+                  <Column field="username" header={t('privileges.colUser')} />
+                  <Column
+                    header={t('privileges.colRoles')}
+                    body={(row) => (row.adminRoles || []).join(', ')}
+                  />
+                  <Column
+                    header={t('privileges.colLinuxUser')}
+                    body={(row) => row.existsInLinux ? <span className="text-green-600 font-bold">Sim</span> : <span className="text-orange-500 font-medium">Não</span>}
+                  />
+                  <Column
+                    header={t('privileges.colWheel')}
+                    body={(row) => row.hasWheelPermission ? <span className="text-green-600 font-bold">Sim (Wheel)</span> : <span className="text-red-500 font-bold">Não</span>}
+                  />
+                  <Column
+                    header={t('privileges.colStatus')}
+                    body={(row) => (
+                      <span className={`p-tag ${row.complianceStatus === 'COMPLIANT' ? 'p-tag-success' : 'p-tag-warning'}`}>
+                        {row.complianceStatus === 'COMPLIANT' ? t('privileges.compliant') : (row.complianceStatus === 'MISSING_WHEEL' ? t('privileges.missingWheel') : t('privileges.linuxUserMissing'))}
+                      </span>
+                    )}
+                  />
+                  <Column
+                    header={t('privileges.colActions')}
+                    body={(row) => !row.hasWheelPermission ? (
+                      <Button
+                        label={t('privileges.syncBtn')}
+                        icon="pi pi-check"
+                        size="small"
+                        severity="info"
+                        onClick={() => syncWheel(row.username)}
+                      />
+                    ) : (
+                      <span className="text-green-600 text-sm font-semibold"><i className="pi pi-check-circle mr-1"></i>OK</span>
+                    )}
+                  />
+                </DataTable>
+
+                <Message severity="info" text={t('privileges.postgresNotice')} />
+              </>
+            )}
+          </div>
+        </Card>
+
         <Card title={t('issue.title')} className="mb-3">
           <div className="flex flex-column gap-2">
             <InputText value={cUser} onChange={e => setCUser(e.target.value)} placeholder={t('issue.userPh')} />

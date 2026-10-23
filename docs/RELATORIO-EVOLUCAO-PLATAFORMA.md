@@ -111,3 +111,67 @@ Validação executada diretamente no host (`192.168.2.10`):
 | `astral-dbm.service` | `8092` | `active (running)` | **HTTP 200 OK** | Rust 1.99 / InterBase Engine |
 | `astral-saas-erp.service` | `8080` | `active (running)` | **HTTP 200 OK** | Java 21 / Spring Boot Tomcat |
 | `auth-service.service` | `8181` | `active (running)` | **HTTP 200 OK** | Rust 1.99 / OAuth2 IdP Central |
+
+---
+
+## 5. Serviço de Verificação e Sincronização de Privilégios Linux (Wheel / Samba AD & BIND AD-DNS)
+
+### 5.1 Motivação e Arquitetura
+
+Para assegurar a governança de acesso entre o diretório corporativo **Samba 4 Active Directory DC** e o sistema operacional host (**Fedora Linux**), foi implementado o `LinuxPrivilegeService` dentro do `auth-service`. O serviço audita se administradores do AD (`Administrator`, membros do grupo `Domain Admins`, `Administrators` e `Enterprise Admins`), bem como operadores validados via bind LDAP do módulo `astral-ad-dns`, possuem permissão ativa no grupo `wheel` do Linux.
+
+```mermaid
+flowchart TD
+    subgraph AD ["Samba 4 Active Directory (LDAPS :636)"]
+        DC["Domain Controller (srvcloud.cloud)"]
+        ADMIN["Administrator"]
+        DOM_ADMINS["Domain Admins (admin-srvcloud, ...)"]
+        BIND_USERS["Usuários via Bind AD-DNS"]
+    end
+
+    subgraph AuthService ["Astral Auth Service (Porta 8181)"]
+        PRIV_SVC["LinuxPrivilegeService"]
+        AUDIT["audit_privileges()"]
+        VERIFY["verify_user_privilege()"]
+        SYNC["sync_wheel_permission()"]
+        PRIV_SVC --> AUDIT
+        PRIV_SVC --> VERIFY
+        PRIV_SVC --> SYNC
+    end
+
+    subgraph LinuxHost ["Host Linux (Fedora Server)"]
+        ETC_GROUP["/etc/group (wheel:x:10:...)"]
+        ETC_PASSWD["/etc/passwd / getent"]
+        SUDOERS["/etc/sudoers.d/auth-service"]
+        USERMOD["sudo usermod -aG wheel"]
+        USERADD["sudo useradd -M -s /bin/bash -G wheel"]
+    end
+
+    DC -->|Consulta LDAP| PRIV_SVC
+    PRIV_SVC -->|Inspeção de Membros| ETC_GROUP
+    SYNC -->|Auto-sincronização| USERMOD
+    SYNC -->|Provisionamento Local| USERADD
+
+    subgraph SecurityPolicy ["Política Estrita de Isolamento"]
+        PG["PostgreSQL Superuser (rolsuper=true)"]
+        BLOCK["HTTP 403 Forbidden / hasWheel: false"]
+        PG --> BLOCK
+    end
+```
+
+### 5.2 Endpoints Homologados
+
+| Rota HTTP | Método | Finalidade |
+| :--- | :---: | :--- |
+| `/api/v1/privileges/status` | `GET` | Relatório completo de auditoria do Samba AD, membros do grupo `wheel` e conformidade de cada administrador. |
+| `/api/v1/privileges/audit` | `GET` | Alias para `/api/v1/privileges/status`. |
+| `/api/v1/privileges/verify` | `GET` | Validação pontual de privilégios (`?username=...&provider=...`). |
+| `/api/v1/privileges/verify-bind` | `POST` | Validação de usuários originados por binds do módulo `astral-ad-dns`. |
+| `/api/v1/privileges/sync-wheel` | `POST` | Sincronização automatizada do usuário administrador do AD no grupo `wheel` do Linux. |
+
+### 5.3 Validação Operacional no Ambiente dc-erp (192.168.2.10)
+
+- **Auditoria do Samba AD**: Localizados com sucesso os administradores `Administrator` e `admin-srvcloud` no domínio `srvcloud.cloud`.
+- **Sincronização de Administrador**: Executado com sucesso o provisionamento e inclusão de `Administrator` no grupo `wheel` (`uid=1003, gid=1003, grupos=1003(Administrator),10(wheel)`).
+- **Isolamento de PostgreSQL**: Rejeição imediata de superusuários de banco de dados (`postgres`) com `complianceStatus = DENIED_POSTGRES`, `hasWheel = false` e bloqueio de sincronização.
+- **Integração com BIND AD-DNS**: Suporte nativo a operadores autenticados via módulo `astral-ad-dns`.

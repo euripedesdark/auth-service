@@ -1,5 +1,6 @@
 use crate::config::AuthConfig;
 use crate::controller::{DomainLoginPayload, IdentityController, LoginPayload};
+use crate::domain::{SyncWheelRequest, VerifyBindRequest};
 use axum::{
     extract::{Query, State},
     http::HeaderMap,
@@ -104,6 +105,37 @@ impl AuthServer {
                 "/actuator/health",
                 get(|State(ctrl): State<Arc<IdentityController>>| async move {
                     ctrl.handle_health()
+                }),
+            )
+            // Rotas de Verificação e Sincronização de Privilégios Linux (Wheel / Samba AD & BIND)
+            .route(
+                "/api/v1/privileges/status",
+                get(|State(ctrl): State<Arc<IdentityController>>| async move {
+                    ctrl.handle_privileges_status().await
+                }),
+            )
+            .route(
+                "/api/v1/privileges/audit",
+                get(|State(ctrl): State<Arc<IdentityController>>| async move {
+                    ctrl.handle_privileges_status().await
+                }),
+            )
+            .route(
+                "/api/v1/privileges/verify",
+                get(|State(ctrl): State<Arc<IdentityController>>, Query(params): Query<HashMap<String, String>>| async move {
+                    ctrl.handle_privileges_verify(params)
+                }),
+            )
+            .route(
+                "/api/v1/privileges/verify-bind",
+                post(|State(ctrl): State<Arc<IdentityController>>, Json(payload): Json<VerifyBindRequest>| async move {
+                    ctrl.handle_verify_bind(payload)
+                }),
+            )
+            .route(
+                "/api/v1/privileges/sync-wheel",
+                post(|State(ctrl): State<Arc<IdentityController>>, Json(payload): Json<SyncWheelRequest>| async move {
+                    ctrl.handle_sync_wheel(payload).await
                 }),
             )
             .layer(cors)

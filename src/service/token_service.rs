@@ -37,6 +37,8 @@ impl TokenService for JwtTokenService {
             username: identity.username.clone(),
             provider: identity.provider.clone(),
             groups: identity.groups.clone(),
+            is_admin: identity.is_admin,
+            has_wheel: identity.has_wheel,
             iat: now,
             exp,
         };

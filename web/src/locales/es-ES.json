@@ -1,12 +1,18 @@
 {
-  "app": { "adminTitle": "Admin — Certificados y MFA", "userTitle": "Descargar su certificado" },
+  "app": {
+    "adminTitle": "Admin — Certificados y MFA",
+    "userTitle": "Descargar su certificado"
+  },
   "login": {
     "title": "Acceso (usuario del dominio)",
-    "user": "Usuario", "userPh": "usuario (ej.: administrator)",
-    "password": "Contraseña", "domain": "Dominio",
+    "user": "Usuario",
+    "userPh": "usuario (ej.: administrator)",
+    "password": "Contraseña",
+    "domain": "Dominio",
     "domainPh": "vacío = predeterminado (ej.: otro-dominio.local)",
     "button": "Entrar",
-    "ok": "Conectado: {user}", "okDomain": "Conectado vía {domain}: {user}",
+    "ok": "Conectado: {user}",
+    "okDomain": "Conectado vía {domain}: {user}",
     "fail": "Error de acceso ({status})",
     "dnsOk": "El dominio resuelve en: {ips}",
     "dnsFail": "El dominio no resuelve en el DNS de la máquina."
@@ -27,7 +33,11 @@
     "secret": "Secreto:",
     "fail": "Error ({status})"
   },
-  "pending": { "title": "Pendientes de descarga", "refresh": "Actualizar", "empty": "Nada pendiente." },
+  "pending": {
+    "title": "Pendientes de descarga",
+    "refresh": "Actualizar",
+    "empty": "Nada pendiente."
+  },
   "revoke": {
     "title": "Revocar certificado",
     "userPh": "usuario de AD",
@@ -36,7 +46,11 @@
     "list": "Ver revocados",
     "empty": "Nada revocado."
   },
-  "cols": { "user": "Usuario", "id": "ID", "status": "Estado" },
+  "cols": {
+    "user": "Usuario",
+    "id": "ID",
+    "status": "Estado"
+  },
   "user": {
     "step1": "Su usuario",
     "userPh": "usuario",
@@ -49,5 +63,25 @@
     "codeInvalid": "Código inválido o expirado.",
     "noPending": "MFA ok, pero sin certificado pendiente.",
     "downloading": "¡OK! Descargando certificado..."
+  },
+  "privileges": {
+    "title": "Verificación de Privilegios Linux (Wheel / Samba AD & BIND)",
+    "auditBtn": "Auditar Privilegios",
+    "syncBtn": "Sincronizar Wheel",
+    "sambaActive": "Samba AD DC: Activo",
+    "sambaInactive": "Samba AD DC: Inactivo",
+    "realm": "Dominio AD:",
+    "wheelMembers": "Miembros del Grupo Wheel (Linux):",
+    "colUser": "Usuario AD",
+    "colRoles": "Roles AD",
+    "colLinuxUser": "Usuario Linux",
+    "colWheel": "Permiso Wheel",
+    "colStatus": "Estado de Conformidad",
+    "colActions": "Acciones",
+    "compliant": "Conforme (Tiene Wheel)",
+    "missingWheel": "Sin Permiso Wheel",
+    "linuxUserMissing": "Usuario no creado en Linux",
+    "syncSuccess": "¡Usuario sincronizado exitosamente en el grupo wheel!",
+    "postgresNotice": "Aviso de Seguridad: Los superusuarios de PostgreSQL están estrictamente aislados del sistema operativo y no tienen permisos de wheel ni de terminal Linux."
   }
 }

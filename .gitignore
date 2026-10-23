@@ -10,3 +10,5 @@ node_modules/
 # Legacy Java
 java_src/
 pom.xml
+web/dist/
+dist/
