@@ -65,3 +65,19 @@ Os dados completos, com as instruções em quatro idiomas, estão nos READMEs:
 A AGPLv3 exige que o código-fonte seja oferecido a quem usa o programa, inclusive quando o uso é **pela rede** — por isso o Affero. Para um serviço de autenticação consumido por HTTPS, essa cláusula é a que importa: quem autentica neste serviço tem direito ao código.
 
 (c) 2026 Astral Auth Service — **Criado por: Euripedes Batista de Paiva Junior**
+
+## 🔐 Política Unificada de Acesso e Autenticação do Ecossistema Astral
+
+O **Astral Auth Service** é o núcleo emissor de identidade e orquestrador de confiança para a plataforma Astral. Ele atua sob as seguintes diretrizes:
+
+### 1. Papel Central como Provedor de Identidade (IdP)
+- **Validação contra Active Directory / LDAP**: Autentica credenciais de operadores e usuários corporativos diretamente no Samba 4 AD via LDAPS (porta 636), mapeando grupos de segurança (`Domain Admins`, `Schema Admins`, etc.).
+- **Integração com PostgreSQL**: Validação de contas de superusuários do banco de dados local (`rolsuper = true`).
+- **Emissão e Assinatura de Tokens JWT**: Gera tokens Bearer assinados com o segredo corporativo compartilhado (`AUTH_TOKEN_SECRET` em `/etc/auth-service/auth.env`), além de cookies de sessão (`sso_token` e `astral_token`).
+
+### 2. Exceção do Acesso Web IAM
+- **Acesso Administrativo Autônomo**: A interface web de IAM do `auth-service` retém credenciais e mecanismo de autenticação administrativo independente/direto.
+- **Justificativa Arquitetural**: O `auth-service` é o módulo responsável por configurar a conectividade inicial com o AD, orquestrar a autoridade de certificação (PKI) e gerar certificados TLS. Se ele dependesse exclusivamente do AD para login, uma indisponibilidade ou provisionamento inicial do AD bloquearia a própria ferramenta necessária para restabelecer a infraestrutura.
+
+### 3. Consumo pelos Demais Módulos Astral
+- Os módulos (`astral-ad-dns`, `astral-dbm`, `astral-internet-security`, `astral-network`, `astral-platform-hci`, `astral-traffic-guard`) consomem tokens emitidos por este serviço ou validam os operadores via suas 4 vias padronizadas (Samba AD, Linux Sudo, PostgreSQL Superuser ou SSO).

@@ -120,3 +120,19 @@ PIX ne fonctionne pas hors du Brésil. **Depuis une banque américaine**, vireme
 Ce projet est sous **GNU AGPL v3**. Voir `LICENSE.fr-FR.md` (note en français ; texte officiel en anglais dans `LICENSE.md`).
 
 (c) Euripedes Batista de Paiva Junior
+
+## 🔐 Politique d'Accès Unifié et Authentification de l'Écosystème Astral
+
+L'**Astral Auth Service** constitue le fournisseur d'identité central et l'orchestrateur de confiance de la plateforme Astral :
+
+### 1. Rôle Central de Fournisseur d'Identité (IdP)
+- **Validation Active Directory / LDAP** : Authentification des opérateurs et utilisateurs directement auprès de Samba 4 AD via LDAPS (port 636), avec extraction des groupes (`Domain Admins`, etc.).
+- **Intégration PostgreSQL** : Validation des superutilisateurs de base de données (`rolsuper = true`).
+- **Émission et Signature de Jetons JWT** : Signature de jetons Bearer et cookies de session (`sso_token`, `astral_token`) via le secret partagé (`AUTH_TOKEN_SECRET` dans `/etc/auth-service/auth.env`).
+
+### 2. Exception Architecturale de l'Interface Web IAM
+- **Accès d'Administration Autonome** : L'interface web IAM d'`auth-service` conserve des identifiants administratifs directs et indépendants.
+- **Justification Architecturale** : `auth-service` configure la liaison AD et génère les certificats TLS. Si sa console exigeait AD pour se connecter, tout incident ou déploiement initial de l'annuaire bloquerait l'outil même requis pour le rétablir.
+
+### 3. Utilisation par les Autres Modules Astral
+- Les modules clients valident les sessions émises par ce service ou via les 4 voies standardisées (Samba AD, Linux Sudo, Superutilisateur PostgreSQL ou SSO).
