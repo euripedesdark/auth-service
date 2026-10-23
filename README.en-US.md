@@ -120,3 +120,19 @@ PIX does not work outside Brazil. **From a US bank**, domestic transfer. **From 
 This project is under **GNU AGPL v3**. See `LICENSE.en-US.md` (official English text, also `LICENSE.md`).
 
 (c) Euripedes Batista de Paiva Junior
+
+## 🔐 Astral Ecosystem Unified Access & Authentication Policy
+
+The **Astral Auth Service** is the central identity provider and trust orchestrator for the Astral platform, operating under the following architecture:
+
+### 1. Central Role as Identity Provider (IdP)
+- **Active Directory / LDAP Validation**: Authenticates corporate operators and domain users directly against Samba 4 AD over LDAPS (port 636), extracting security groups (`Domain Admins`, `Schema Admins`, etc.).
+- **PostgreSQL Integration**: Validates database superuser credentials (`rolsuper = true`).
+- **JWT Token Issuance & Signing**: Signs short-lived Bearer tokens and HTTP session cookies (`sso_token`, `astral_token`) using the shared cluster secret (`AUTH_TOKEN_SECRET` in `/etc/auth-service/auth.env`).
+
+### 2. Web IAM Interface Architectural Exception
+- **Autonomous Administrative Access**: The IAM web console of `auth-service` maintains independent/direct administrative bootstrap credentials.
+- **Architectural Rationale**: `auth-service` is responsible for establishing AD trust, regulating access, and issuing platform TLS certificates. If its management interface required AD to authenticate, any initial domain provisioning or directory outage would deadlock the very tool required to restore infrastructure.
+
+### 3. Consumption Across Astral Modules
+- Subsystems (`astral-ad-dns`, `astral-dbm`, `astral-internet-security`, `astral-network`, `astral-platform-hci`, `astral-traffic-guard`) validate incoming sessions either by querying this service, decoding shared JWTs, or through the 4 standardized access avenues (Samba AD, Linux Sudo, PostgreSQL Superuser, or SSO).
