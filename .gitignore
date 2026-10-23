@@ -1,1 +1,12 @@
 target/
+# Rust
+target/
+Cargo.lock.bak
+
+# Node
+node_modules/
+**/node_modules/
+
+# Legacy Java
+java_src/
+pom.xml

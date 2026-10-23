@@ -1,4 +1,4 @@
-#  Auth Service
+# Astral Auth Service
 
 🇧🇷 **Open Source Authentication Service** — autenticação centralizada e identidade (LDAP/AD) para ERP, firewall, proxy e outros serviços, com REST + JWT de curta duração.
 
@@ -31,7 +31,7 @@
 
 ## Apoie o Projeto
 
-BrasilCloud Auth Service é um Auth Service Open Source mantido por um único desenvolvedor.
+Astral Auth Service é um Auth Service Open Source mantido por um único desenvolvedor.
 
 Se este projeto ajudou você, sua empresa ou sua equipe, considere apoiar o desenvolvimento.
 
@@ -64,4 +64,4 @@ Os dados completos, com as instruções em quatro idiomas, estão nos READMEs:
 
 A AGPLv3 exige que o código-fonte seja oferecido a quem usa o programa, inclusive quando o uso é **pela rede** — por isso o Affero. Para um serviço de autenticação consumido por HTTPS, essa cláusula é a que importa: quem autentica neste serviço tem direito ao código.
 
-(c) 2026 BrasilCloud Auth Service — **Criado por: Euripedes Batista de Paiva Junior**
+(c) 2026 Astral Auth Service — **Criado por: Euripedes Batista de Paiva Junior**

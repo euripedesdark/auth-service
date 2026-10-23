@@ -1,0 +1,20 @@
+[package]
+name = "astral-auth-service"
+version = "1.4.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.8", features = ["json", "tokio"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+ldap3 = "0.12"
+jsonwebtoken = { version = "11.1", features = ["rust_crypto"] }
+chrono = { version = "0.4", features = ["serde"] }
+dotenvy = "0.15"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace", "fs"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+http = "1"
+async-trait = "0.1"
