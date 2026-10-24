@@ -12,6 +12,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
+use tower_http::services::ServeDir;
 use tracing::info;
 
 pub struct AuthServer {
@@ -31,7 +32,10 @@ impl AuthServer {
             .allow_methods(Any)
             .allow_headers(Any);
 
+        let web_dist = std::env::var("AUTH_WEB_DIST").unwrap_or_else(|_| "web/dist".into());
         Router::new()
+            .nest_service("/admin", ServeDir::new(web_dist.clone()).append_index_html_on_directories(true))
+            .nest_service("/mfa", ServeDir::new(web_dist).append_index_html_on_directories(true))
             .route(
                 "/api/v1/identity/authenticate",
                 post(|State(ctrl): State<Arc<IdentityController>>, Json(payload): Json<LoginPayload>| async move {
