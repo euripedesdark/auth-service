@@ -28,10 +28,13 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Cargo check
-        run: cargo check --all-targets
+        run: cargo check --all-targets --locked
 
       - name: Run Cargo tests
-        run: cargo test --verbose
+        run: cargo test --verbose --locked
 
       - name: Build release binary
-        run: cargo build --release
+        run: cargo build --release --locked
+
+      - name: Test deployment rollback
+        run: python3 -m unittest discover -s tests -v

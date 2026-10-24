@@ -12,3 +12,7 @@ java_src/
 pom.xml
 web/dist/
 dist/
+
+# Python deployment checks
+__pycache__/
+*.pyc

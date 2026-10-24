@@ -68,3 +68,11 @@ curl -s -X POST http://127.0.0.1:8181/api/v1/privileges/sync-wheel \
   -H "Content-Type: application/json" \
   -d '{"username":"Administrator","createLinuxUserIfMissing":true}' | jq .
 ```
+
+## OAuth2 Authorization Code + PKCE
+
+O auth-service inclui autorizacao por codigo com PKCE S256, login corporativo
+via LDAPS, troca de codigo, userinfo e sessao SSO. O HCI cadastra e implanta
+os dois servicos com `configure_oauth2.py`.
+
+[Configuracao, endpoints e deploy OAuth2](docs/oauth2.md).

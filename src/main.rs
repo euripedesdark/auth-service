@@ -1,4 +1,5 @@
 mod config;
+mod oauth;
 mod controller;
 mod domain;
 mod server;
@@ -41,12 +42,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let privilege_service = Arc::new(DefaultLinuxPrivilegeService::new(config.clone()));
 
     let controller = Arc::new(IdentityController::new(
-        identity_provider,
+        identity_provider.clone(),
         token_service,
         domain_resolver,
-        privilege_service,
+        privilege_service.clone(),
     ));
 
-    let server = AuthServer::new(config, controller);
+    let oauth = Arc::new(oauth::Provider::load(identity_provider, privilege_service)?);
+    let server = AuthServer::new(config, controller, oauth);
     server.run().await
 }

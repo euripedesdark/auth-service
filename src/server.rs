@@ -16,12 +16,13 @@ use tracing::info;
 
 pub struct AuthServer {
     config: Arc<AuthConfig>,
+    oauth: Arc<crate::oauth::Provider>,
     controller: Arc<IdentityController>,
 }
 
 impl AuthServer {
-    pub fn new(config: Arc<AuthConfig>, controller: Arc<IdentityController>) -> Self {
-        Self { config, controller }
+    pub fn new(config: Arc<AuthConfig>, controller: Arc<IdentityController>, oauth: Arc<crate::oauth::Provider>) -> Self {
+        Self { config, controller, oauth }
     }
 
     pub fn build_router(&self) -> Router {
@@ -141,10 +142,12 @@ impl AuthServer {
             .layer(cors)
             .layer(TraceLayer::new_for_http())
             .with_state(self.controller.clone())
+            .merge(crate::oauth::router(self.oauth.clone()))
     }
 
     pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let addr = SocketAddr::from(([0, 0, 0, 0], self.config.server_port));
+        let address = std::env::var("SERVER_ADDRESS").unwrap_or_else(|_| "127.0.0.1".into());
+        let addr: SocketAddr = format!("{}:{}", address, self.config.server_port).parse()?;
         info!("Astral Auth Service listening on {}", addr);
         let listener = tokio::net::TcpListener::bind(addr).await?;
         let router = self.build_router();
